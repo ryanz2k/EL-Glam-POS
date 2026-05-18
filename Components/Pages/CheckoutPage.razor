@@ -1,0 +1,769 @@
+@page "/checkout"
+@inject NavigationManager NavigationManager
+@inject ELGlamPOS.Services.CartStateService CartState
+@inject ELGlamPOS.Services.PosSessionState SessionState
+@inject ELGlamPOS.Data.PosDbContext DbContext
+@inject ELGlamPOS.Services.IReceiptPrinterService ReceiptPrinter
+@inject ELGlamPOS.Services.ICommissionCalculatorService CommissionCalculator
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="flex flex-col h-full bg-el-pink-50/30 overflow-hidden">
+    <!-- Header -->
+    <div class="px-6 py-4 bg-white border-b border-el-pink-100 flex items-center gap-4 shrink-0 shadow-sm z-10">
+        <button @onclick="PromptLeave" class="p-2 hover:bg-el-pink-50 rounded-xl text-gray-500 hover:text-el-pink-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        </button>
+        <h1 class="text-xl font-bold text-gray-800">Complete Payment</h1>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 items-start">
+            
+            <!-- Left Column: Payment Details -->
+            <div class="flex-1 w-full space-y-6">
+                @if (!string.IsNullOrEmpty(errorMessage) && (selectedPaymentMethod != "Split" || !errorMessage.StartsWith("Split payment")))
+                {
+                    <div class="p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-200">
+                        @errorMessage
+                    </div>
+                }
+
+                <!-- Customer Details Form -->
+                <div class="glass-card p-6 border border-white/40">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Customer Details <span class="text-gray-400 font-normal text-sm">(Optional)</span></h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                            <input type="text" @bind="customerName" @bind:event="oninput" class="w-full px-4 py-2 border border-el-pink-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 focus:border-transparent outline-none transition-all" placeholder="Jane Doe" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contact No. <span class="text-gray-400 font-normal text-xs">(Optional)</span></label>
+                            <input type="text" @bind="customerContactNo" @bind:event="oninput" class="w-full px-4 py-2 border border-el-pink-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 focus:border-transparent outline-none transition-all" placeholder="09XX-XXX-XXXX" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Transaction Note</label>
+                            <textarea @bind="note" @bind:event="oninput" rows="2" class="w-full px-4 py-2 border border-el-pink-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 focus:border-transparent outline-none transition-all resize-none" placeholder="Any special requests or details..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="glass-card p-6 border border-white/40">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Payment Method</h2>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button @onclick='() => SelectPaymentMethod("Cash")' class="p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 @(selectedPaymentMethod == "Cash" ? "border-el-pink-500 bg-el-pink-50" : "border-gray-200 hover:border-el-pink-200 bg-white")">
+                            <svg class="w-6 h-6 @(selectedPaymentMethod == "Cash" ? "text-el-pink-500" : "text-gray-400")" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <span class="font-bold text-sm @(selectedPaymentMethod == "Cash" ? "text-el-pink-700" : "text-gray-600")">Cash</span>
+                        </button>
+                        
+                        <button @onclick='() => SelectPaymentMethod("GCash")' class="p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 @(selectedPaymentMethod == "GCash" ? "border-el-pink-500 bg-el-pink-50" : "border-gray-200 hover:border-el-pink-200 bg-white")">
+                            <svg class="w-6 h-6 @(selectedPaymentMethod == "GCash" ? "text-el-pink-500" : "text-gray-400")" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            <span class="font-bold text-sm @(selectedPaymentMethod == "GCash" ? "text-el-pink-700" : "text-gray-600")">GCash</span>
+                        </button>
+                        
+                        <button @onclick='() => SelectPaymentMethod("Maya")' class="p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 @(selectedPaymentMethod == "Maya" ? "border-el-pink-500 bg-el-pink-50" : "border-gray-200 hover:border-el-pink-200 bg-white")">
+                            <svg class="w-6 h-6 @(selectedPaymentMethod == "Maya" ? "text-el-pink-500" : "text-gray-400")" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            <span class="font-bold text-sm @(selectedPaymentMethod == "Maya" ? "text-el-pink-700" : "text-gray-600")">Maya</span>
+                        </button>
+
+                        <button @onclick='() => SelectPaymentMethod("BankTransfer")' class="p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 @(selectedPaymentMethod == "BankTransfer" ? "border-el-pink-500 bg-el-pink-50" : "border-gray-200 hover:border-el-pink-200 bg-white")">
+                            <svg class="w-6 h-6 @(selectedPaymentMethod == "BankTransfer" ? "text-el-pink-500" : "text-gray-400")" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
+                            <span class="font-bold text-sm @(selectedPaymentMethod == "BankTransfer" ? "text-el-pink-700" : "text-gray-600")">Bank Transfer</span>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button @onclick='() => SelectPaymentMethod("Split")' class="w-full p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 @(selectedPaymentMethod == "Split" ? "border-el-pink-500 bg-el-pink-50" : "border-gray-200 hover:border-el-pink-200 bg-white")">
+                            <svg class="w-6 h-6 @(selectedPaymentMethod == "Split" ? "text-el-pink-500" : "text-gray-400")" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+                            <span class="font-bold text-sm @(selectedPaymentMethod == "Split" ? "text-el-pink-700" : "text-gray-600")">Split Payment</span>
+                        </button>
+                    </div>
+
+                    @if (selectedPaymentMethod == "Split")
+                    {
+                        <div class="mt-4 p-4 border border-el-pink-200 bg-white rounded-xl space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Cash</span>
+                                <input type="number" @bind="splitCash" @bind:event="oninput" min="0" step="any" class="w-32 px-3 py-1.5 border border-gray-200 focus:border-el-pink-400 focus:ring-1 focus:ring-el-pink-400 outline-none rounded-lg text-right transition-all" placeholder="0.00" />
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">GCash</span>
+                                <input type="number" @bind="splitGCash" @bind:event="oninput" min="0" step="any" class="w-32 px-3 py-1.5 border border-gray-200 focus:border-el-pink-400 focus:ring-1 focus:ring-el-pink-400 outline-none rounded-lg text-right transition-all" placeholder="0.00" />
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Maya</span>
+                                <input type="number" @bind="splitMaya" @bind:event="oninput" min="0" step="any" class="w-32 px-3 py-1.5 border border-gray-200 focus:border-el-pink-400 focus:ring-1 focus:ring-el-pink-400 outline-none rounded-lg text-right transition-all" placeholder="0.00" />
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Bank Transfer</span>
+                                <input type="number" @bind="splitBank" @bind:event="oninput" min="0" step="any" class="w-32 px-3 py-1.5 border border-gray-200 focus:border-el-pink-400 focus:ring-1 focus:ring-el-pink-400 outline-none rounded-lg text-right transition-all" placeholder="0.00" />
+                            </div>
+                            <div class="pt-3 border-t border-gray-100 flex flex-col gap-2 font-bold">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-800">Split Total</span>
+                                    <span class="text-sm @(SplitTotal == CartState.Total ? "text-green-600" : "text-red-500")">₱@SplitTotal.ToString("N2")</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">Order Total</span>
+                                    <span class="text-sm text-gray-800">₱@CartState.Total.ToString("N2")</span>
+                                </div>
+                                @if (selectedPaymentMethod == "Split" && !string.IsNullOrEmpty(errorMessage) && errorMessage.StartsWith("Split payment"))
+                                {
+                                    <div class="text-xs text-red-500 text-right mt-1">
+                                        @errorMessage
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Discount Section -->
+                <div class="glass-card p-6 border border-white/40">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">Discounts</h2>
+                        @if (CartState.Discounts.Count > 0)
+                        {
+                            <button @onclick="ClearAllDiscounts" class="text-xs text-red-500 hover:text-red-700 font-medium">Remove All</button>
+                        }
+                    </div>
+                    
+                    @if (CartState.Discounts.Count > 0)
+                    {
+                        <div class="space-y-2 mb-4">
+                            @foreach (var d in CartState.Discounts)
+                            {
+                                var discountAmt = GetSingleDiscountAmount(d);
+                                <div class="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-between gap-2">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-bold text-green-700 truncate">@BuildDiscountLabel(d)</p>
+                                        <p class="text-[10px] text-green-600">-₱@discountAmt.ToString("N2")</p>
+                                    </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button @onclick="() => EditDiscount(d)" class="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition-colors" title="Edit">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <button @onclick="() => CartState.RemoveDiscount(d.Id)" class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    
+                    <button @onclick="OpenAddDiscountModal" class="w-full py-3 px-4 border-2 border-dashed border-el-pink-200 hover:border-el-pink-400 rounded-xl text-el-pink-500 font-bold text-sm transition-all hover:bg-el-pink-50 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Add Discount
+                    </button>
+                </div>
+
+                <button @onclick="InitiatePayment" 
+                        disabled="@isProcessing" 
+                        class="block w-full mt-8 py-5 px-6 bg-gradient-to-r from-el-pink-500 to-el-pink-400 hover:from-el-pink-600 hover:to-el-pink-500 text-white rounded-2xl font-black text-xl uppercase tracking-wider transition-all shadow-md hover:shadow-lg disabled:opacity-50">
+                    @(isProcessing ? "Processing..." : $"Complete Checkout - ₱{CartState.Total:N2}")
+                </button>
+            </div>
+
+            <!-- Right Column: Receipt Preview -->
+            <div class="w-full md:w-80 lg:w-96 shrink-0">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden relative">
+                    <!-- Jagged Top Edge (Receipt style) -->
+                    <div class="h-2 w-full absolute top-0" style="background-image: linear-gradient(-45deg, transparent 50%, white 50%), linear-gradient(45deg, transparent 50%, white 50%); background-size: 10px 10px; background-repeat: repeat-x;"></div>
+                    
+                    <div class="p-8 text-center border-b border-dashed border-gray-300 font-mono text-sm">
+                        <!-- Logo in Receipt -->
+                        <div class="flex justify-center mb-4">
+                            <div class="w-16 h-16 rounded-2xl overflow-hidden border border-el-pink-100 bg-white p-1 shadow-sm">
+                                <img src="images/logo.jpg" alt="Logo" class="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-bold text-lg text-gray-800 tracking-tight uppercase">EL Glamorous</h3>
+                        <p class="text-gray-500 text-xs">Face and Body Clinic</p>
+                        <p class="text-gray-500 text-xs mt-1">@(SessionState.CurrentBranch?.Name ?? "Main Branch")</p>
+                        
+                        <div class="my-4 pt-4 border-t border-dashed border-gray-300 text-left space-y-1 text-gray-600">
+                            <div class="flex justify-between">
+                                <span>Date:</span>
+                                <span>@DateTime.Now.ToString("MM/dd/yyyy HH:mm")</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Cashier:</span>
+                                <span>@SessionState.CurrentEmployee?.Name</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(customerName))
+                            {
+                                <div class="flex justify-between">
+                                    <span>Customer:</span>
+                                    <span>@customerName</span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(customerContactNo))
+                            {
+                                <div class="flex justify-between">
+                                    <span>Contact No:</span>
+                                    <span>@customerContactNo</span>
+                                </div>
+                            }
+                            <div class="flex justify-between">
+                                <span>Payment:</span>
+                                <span>@GetPaymentDisplay(selectedPaymentMethod)</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(note))
+                            {
+                                <div class="flex flex-col pt-2 mt-2 border-t border-dashed border-gray-200">
+                                    <span class="text-left font-semibold text-gray-500 mb-1">Note:</span>
+                                    <span class="text-left text-xs bg-gray-50 p-2 rounded border border-gray-100">@note</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="my-4 border-t border-dashed border-gray-300 pt-4 text-left">
+                            <table class="w-full text-xs text-gray-600">
+                                <thead>
+                                    <tr class="border-b border-dashed border-gray-300">
+                                        <th class="text-left font-normal pb-2">Item</th>
+                                        <th class="text-right font-normal pb-2">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-dashed divide-gray-100">
+                                    @foreach (var item in CartState.Items)
+                                    {
+                                        <tr>
+                                            <td class="py-2 pr-2">
+                                                <div class="font-semibold text-gray-800">@item.ServiceItem.Name</div>
+                                                <div class="text-[10px] text-gray-500 mt-0.5">By: @item.AssignedEmployeeName</div>
+                                            </td>
+                                            <td class="py-2 text-right align-top whitespace-nowrap">
+                                                ₱@item.FinalPrice.ToString("N2")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="my-4 pt-4 border-t border-dashed border-gray-300 space-y-1">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Subtotal</span>
+                                <span>₱@CartState.Subtotal.ToString("N2")</span>
+                            </div>
+                            @if (CartState.DiscountAmount > 0)
+                            {
+                                <div class="flex justify-between text-green-600">
+                                    <span>Discount</span>
+                                    <span>-₱@CartState.DiscountAmount.ToString("N2")</span>
+                                </div>
+                            }
+                            <div class="flex justify-between items-end pt-1">
+                                <span class="font-bold text-gray-800">TOTAL</span>
+                                <span class="text-xl font-bold text-gray-800 tracking-tight">₱@CartState.Total.ToString("N2")</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 text-center text-xs text-gray-500">
+                            <p>Thank you for choosing EL Glam!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Jagged Bottom Edge -->
+                    <div class="h-2 w-full absolute bottom-0 rotate-180" style="background-image: linear-gradient(-45deg, transparent 50%, white 50%), linear-gradient(45deg, transparent 50%, white 50%); background-size: 10px 10px; background-repeat: repeat-x;"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@if (showPaymentConfirmation)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-in zoom-in-95 duration-200 border border-el-pink-100">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Confirm Payment</h2>
+            <p class="text-gray-600 mb-6">Has the customer paid the exact amount of <strong class="text-gray-900 font-bold text-lg">₱@CartState.Total.ToString("N2")</strong> via @GetPaymentDisplay(selectedPaymentMethod)?</p>
+            
+            <div class="flex gap-3">
+                <button @onclick="() => showPaymentConfirmation = false" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="ConfirmPayment" class="flex-1 py-3 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl font-bold transition-all shadow-md">Yes, Paid</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showSuccessModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-in zoom-in-95 duration-200">
+            <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h2>
+            
+            <div class="bg-gray-50 rounded-xl p-4 mb-6 mt-4 border border-gray-100">
+                <p class="text-gray-500 text-sm mb-1">Receipt ID: <span class="font-mono font-bold text-gray-800">#@lastTransactionId.ToString("D6")</span></p>
+                @if (!string.IsNullOrEmpty(customerName))
+                {
+                    <p class="text-gray-500 text-sm">Customer: <span class="font-semibold text-gray-800">@customerName</span></p>
+                }
+            </div>
+
+            <p class="text-gray-500 mb-6 text-sm">The receipt has been sent to the printer.</p>
+            <button @onclick="FinishCheckout" class="w-full py-3 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl font-bold transition-all shadow-md">Return to Home</button>
+        </div>
+    </div>
+}
+
+@if (showDiscountModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full animate-in zoom-in-95 duration-200 border border-el-pink-100 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">@(editingDiscountId != null ? "Edit Discount" : "Add Discount")</h2>
+            
+            <!-- Discount Type -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button @onclick='() => discountModalType = "Flat"' class="p-3 rounded-xl border-2 transition-all text-sm font-bold @(discountModalType == "Flat" ? "border-el-pink-500 bg-el-pink-50 text-el-pink-700" : "border-gray-200 text-gray-600 hover:border-el-pink-200")">
+                        Flat Price (₱)
+                    </button>
+                    <button @onclick='() => discountModalType = "Percentage"' class="p-3 rounded-xl border-2 transition-all text-sm font-bold @(discountModalType == "Percentage" ? "border-el-pink-500 bg-el-pink-50 text-el-pink-700" : "border-gray-200 text-gray-600 hover:border-el-pink-200")">
+                        Percentage (%)
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Amount -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">@(discountModalType == "Flat" ? "Amount (₱)" : "Percentage (%)")</label>
+                <input type="number" @bind="discountModalValue" min="0" step="any" class="w-full px-4 py-2 border border-el-pink-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 focus:border-transparent outline-none transition-all" placeholder="Enter value" />
+            </div>
+            
+            <!-- Apply To -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Apply To</label>
+                <div class="space-y-2">
+                    <label class="w-full p-3 rounded-xl border-2 transition-all text-sm font-bold cursor-pointer flex items-center gap-3 @(discountModalIsTotal ? "border-el-pink-500 bg-el-pink-50 text-el-pink-700" : "border-gray-200 text-gray-600 hover:border-el-pink-200")">
+                        <input type="radio" name="discountScope" checked="@discountModalIsTotal" @onchange="() => SetDiscountScopeTotal()" class="accent-[var(--color-el-pink-500)]" />
+                        Total Order
+                    </label>
+                    <label class="w-full p-3 rounded-xl border-2 transition-all text-sm font-bold cursor-pointer flex items-center gap-3 @(!discountModalIsTotal ? "border-el-pink-500 bg-el-pink-50 text-el-pink-700" : "border-gray-200 text-gray-600 hover:border-el-pink-200")">
+                        <input type="radio" name="discountScope" checked="@(!discountModalIsTotal)" @onchange="() => SetDiscountScopeItems()" class="accent-[var(--color-el-pink-500)]" />
+                        Individual Services
+                    </label>
+                    
+                    @if (!discountModalIsTotal)
+                    {
+                        <div class="pl-4 space-y-1.5 mt-1">
+                            @foreach (var item in CartState.Items)
+                            {
+                                var itemId = item.Id;
+                                <label class="flex items-center gap-3 p-2.5 rounded-lg border transition-all cursor-pointer text-sm @(discountModalTargets.Contains(itemId) ? "border-el-pink-300 bg-el-pink-50" : "border-gray-100 hover:border-el-pink-200")">
+                                    <input type="checkbox" checked="@discountModalTargets.Contains(itemId)" @onchange="(e) => ToggleItemTarget(itemId, (bool)(e.Value ?? false))" class="accent-[var(--color-el-pink-500)] w-4 h-4" />
+                                    <span class="flex-1 font-medium text-gray-700">@item.ServiceItem.Name</span>
+                                    <span class="text-xs text-gray-500">₱@item.FinalPrice.ToString("N2")</span>
+                                </label>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button @onclick="CloseDiscountModal" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="ApplyDiscountFromModal" class="flex-1 py-3 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl font-bold transition-all shadow-md">@(editingDiscountId != null ? "Update" : "Apply")</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showLeaveConfirm)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-in zoom-in-95 duration-200 border border-amber-100">
+            <div class="w-16 h-16 mx-auto bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Leave Checkout?</h2>
+            <p class="text-gray-600 mb-6">You have an ongoing checkout. Would you like to save it as a draft so you can continue later?</p>
+            <div class="flex flex-col gap-2">
+                <button @onclick="SaveAndLeave" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-all shadow-md">Save as Draft</button>
+                <button @onclick="DiscardAndLeave" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all">Discard & Leave</button>
+                <button @onclick="CancelLeave" class="w-full py-2 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string selectedPaymentMethod = "Cash";
+    private string customerName = "";
+    private string customerContactNo = "";
+    private string note = "";
+    private string errorMessage = "";
+    private bool isProcessing = false;
+    private bool showSuccessModal = false;
+    private bool showPaymentConfirmation = false;
+    private bool showDiscountModal = false;
+    private int lastTransactionId = 0;
+    private bool showLeaveConfirm = false;
+    private string? pendingLeaveUrl = null;
+    private bool isLeavingAllowed = false;
+    private IDisposable? _navRegistration;
+
+    // Discount modal state
+    private string discountModalType = "Flat";
+    private decimal discountModalValue = 0;
+    private bool discountModalIsTotal = true;
+    private HashSet<string> discountModalTargets = new();
+    private string? editingDiscountId = null;
+
+    // Split Payment State
+    private decimal splitCash = 0;
+    private decimal splitGCash = 0;
+    private decimal splitMaya = 0;
+    private decimal splitBank = 0;
+    private decimal SplitTotal => splitCash + splitGCash + splitMaya + splitBank;
+
+    protected override void OnInitialized()
+    {
+        if (CartState.Items.Count == 0)
+        {
+            isLeavingAllowed = true;
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+        _navRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private ValueTask OnLocationChanging(Microsoft.AspNetCore.Components.Routing.LocationChangingContext context)
+    {
+        // Allow navigation if explicitly permitted (after user chose discard/save) or after successful checkout
+        if (isLeavingAllowed || showSuccessModal)
+            return ValueTask.CompletedTask;
+
+        // Block and show modal
+        context.PreventNavigation();
+        pendingLeaveUrl = context.TargetLocation;
+        showLeaveConfirm = true;
+        StateHasChanged();
+        return ValueTask.CompletedTask;
+    }
+
+    private void PromptLeave()
+    {
+        pendingLeaveUrl = "/";
+        showLeaveConfirm = true;
+    }
+
+    private async Task SaveAndLeave()
+    {
+        showLeaveConfirm = false;
+        if (CartState.Items.Count > 0)
+        {
+            try
+            {
+                var draft = new ELGlamPOS.Models.DraftOrder
+                {
+                    BranchId = SessionState.CurrentBranchId!.Value,
+                    CreatedByEmployeeId = SessionState.CurrentEmployeeId!.Value,
+                    CreatedDate = DateTime.UtcNow,
+                    Status = ELGlamPOS.Models.DraftOrderStatus.Draft,
+                    CustomerName = string.IsNullOrWhiteSpace(customerName) ? null : customerName,
+                    CustomerContactNo = string.IsNullOrWhiteSpace(customerContactNo) ? null : customerContactNo,
+                    Note = string.IsNullOrWhiteSpace(note) ? null : note,
+                    DiscountAmount = CartState.DiscountAmount,
+                    DiscountDescription = BuildFullDiscountDescription()
+                };
+                foreach (var cartItem in CartState.Items)
+                {
+                    draft.Items.Add(new ELGlamPOS.Models.DraftOrderItem
+                    {
+                        ServiceItemId = cartItem.ServiceItem.Id,
+                        AssignedEmployeeId = cartItem.AssignedEmployeeId,
+                        FinalPrice = cartItem.FinalPrice
+                    });
+                }
+                DbContext.DraftOrders.Add(draft);
+                await DbContext.SaveChangesAsync();
+                CartState.ClearCart();
+            }
+            catch { }
+        }
+        isLeavingAllowed = true;
+        NavigationManager.NavigateTo(pendingLeaveUrl ?? "/");
+    }
+
+    private void DiscardAndLeave()
+    {
+        showLeaveConfirm = false;
+        CartState.ClearCart();
+        isLeavingAllowed = true;
+        NavigationManager.NavigateTo(pendingLeaveUrl ?? "/");
+    }
+
+    private void CancelLeave()
+    {
+        showLeaveConfirm = false;
+        pendingLeaveUrl = null;
+    }
+
+    private static string GetPaymentDisplay(string method) => method switch
+    {
+        "BankTransfer" => "Bank Transfer",
+        "Split" => "Split Payment",
+        _ => method
+    };
+
+    private Task SelectPaymentMethod(string method)
+    {
+        selectedPaymentMethod = method;
+        errorMessage = "";
+        return Task.CompletedTask;
+    }
+
+    private void ClearAllDiscounts() => CartState.ClearDiscount();
+
+    private void SetDiscountScopeTotal()
+    {
+        discountModalIsTotal = true;
+        discountModalTargets.Clear();
+    }
+
+    private void SetDiscountScopeItems()
+    {
+        discountModalIsTotal = false;
+    }
+
+    private void ToggleItemTarget(string id, bool isChecked)
+    {
+        if (isChecked) discountModalTargets.Add(id);
+        else discountModalTargets.Remove(id);
+    }
+
+    private void OpenAddDiscountModal()
+    {
+        editingDiscountId = null;
+        discountModalType = "Flat";
+        discountModalValue = 0;
+        discountModalIsTotal = true;
+        discountModalTargets = new();
+        showDiscountModal = true;
+    }
+
+    private void EditDiscount(ELGlamPOS.Services.DiscountEntry d)
+    {
+        editingDiscountId = d.Id;
+        discountModalType = d.Type;
+        discountModalValue = d.Value;
+        discountModalIsTotal = d.IsTotal;
+        discountModalTargets = new HashSet<string>(d.TargetCartItemIds);
+        showDiscountModal = true;
+    }
+
+    private void CloseDiscountModal()
+    {
+        showDiscountModal = false;
+        editingDiscountId = null;
+    }
+
+    private void ApplyDiscountFromModal()
+    {
+        if (discountModalValue <= 0) return;
+        if (!discountModalIsTotal && discountModalTargets.Count == 0) return;
+
+        var targets = discountModalIsTotal ? new HashSet<string>() : new HashSet<string>(discountModalTargets);
+
+        if (editingDiscountId != null)
+        {
+            CartState.UpdateDiscount(editingDiscountId, discountModalType, discountModalValue, targets);
+        }
+        else
+        {
+            CartState.AddDiscount(discountModalType, discountModalValue, targets);
+        }
+        CloseDiscountModal();
+    }
+
+    private decimal GetSingleDiscountAmount(ELGlamPOS.Services.DiscountEntry d)
+    {
+        if (d.Value <= 0) return 0;
+        if (d.IsTotal)
+        {
+            return d.Type == "Flat" ? Math.Min(d.Value, CartState.Subtotal) : Math.Round(CartState.Subtotal * d.Value / 100m, 2);
+        }
+        // Per-item: flat applies per targeted item
+        decimal total = 0;
+        foreach (var item in CartState.Items.Where(i => d.TargetCartItemIds.Contains(i.Id)))
+        {
+            total += d.Type == "Flat" ? Math.Min(d.Value, item.FinalPrice) : Math.Round(item.FinalPrice * d.Value / 100m, 2);
+        }
+        return total;
+    }
+
+    private string BuildDiscountLabel(ELGlamPOS.Services.DiscountEntry d)
+    {
+        string prefix = d.Type == "Flat" ? $"₱{d.Value:N2} off" : $"{d.Value}% off";
+        if (d.IsTotal) return $"{prefix} Total Order";
+
+        var names = CartState.Items
+            .Where(i => d.TargetCartItemIds.Contains(i.Id))
+            .Select(i => i.ServiceItem.Name)
+            .ToList();
+
+        return names.Count switch
+        {
+            0 => prefix,
+            1 => $"{prefix} {names[0]}",
+            _ => $"{prefix} {string.Join(", ", names)}"
+        };
+    }
+
+    private string BuildFullDiscountDescription()
+    {
+        if (CartState.Discounts.Count == 0) return "";
+        return string.Join("; ", CartState.Discounts.Select(d => BuildDiscountLabel(d)));
+    }
+
+    private void InitiatePayment()
+    {
+        if (selectedPaymentMethod == "Split" && SplitTotal != CartState.Total)
+        {
+            errorMessage = $"Split payment total (₱{SplitTotal:N2}) must exactly match the order total (₱{CartState.Total:N2}).";
+            return;
+        }
+        showPaymentConfirmation = true;
+    }
+
+    private async Task ConfirmPayment()
+    {
+        showPaymentConfirmation = false;
+        
+        ELGlamPOS.Models.PaymentType pType = selectedPaymentMethod switch {
+            "GCash" => ELGlamPOS.Models.PaymentType.GCash,
+            "Maya" => ELGlamPOS.Models.PaymentType.Maya,
+            "BankTransfer" => ELGlamPOS.Models.PaymentType.BankTransfer,
+            "Split" => ELGlamPOS.Models.PaymentType.Split,
+            _ => ELGlamPOS.Models.PaymentType.Cash
+        };
+        
+        await ProcessTransaction(pType);
+    }
+
+    private async Task ProcessTransaction(ELGlamPOS.Models.PaymentType pType)
+    {
+        isProcessing = true;
+        errorMessage = "";
+
+        try
+        {
+            var branchEmployees = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                DbContext.Employees.Include(e => e.CommissionRules).Where(e => e.BranchId == SessionState.CurrentBranchId && e.IsActive));
+
+            var transaction = new ELGlamPOS.Models.Transaction
+            {
+                BranchId = SessionState.CurrentBranchId!.Value,
+                ReceptionistId = SessionState.CurrentEmployeeId!.Value,
+                TransactionDate = DateTime.UtcNow,
+                TotalAmount = CartState.Total,
+                PaymentType = pType,
+                SyncStatus = ELGlamPOS.Models.SyncStatus.Pending,
+                CustomerName = string.IsNullOrWhiteSpace(customerName) ? null : customerName,
+                CustomerContactNo = string.IsNullOrWhiteSpace(customerContactNo) ? null : customerContactNo,
+                Note = string.IsNullOrWhiteSpace(note) ? null : note,
+                DiscountAmount = CartState.DiscountAmount,
+                DiscountDescription = BuildFullDiscountDescription(),
+                Items = new List<ELGlamPOS.Models.TransactionItem>()
+            };
+
+            if (pType == ELGlamPOS.Models.PaymentType.Split)
+            {
+                transaction.CashAmount = splitCash;
+                transaction.GCashAmount = splitGCash;
+                transaction.MayaAmount = splitMaya;
+                transaction.BankTransferAmount = splitBank;
+            }
+
+            foreach (var cartItem in CartState.Items)
+            {
+                var transactionItem = new ELGlamPOS.Models.TransactionItem
+                {
+                    ServiceItemId = cartItem.ServiceItem.Id,
+                    Quantity = cartItem.Quantity,
+                    PriceAtTimeOfSale = cartItem.FinalPrice,
+                    AssignedEmployeeId = cartItem.AssignedEmployeeId!.Value
+                };
+                
+                transactionItem.ServiceItem = cartItem.ServiceItem;
+                var assignedEmp = branchEmployees.FirstOrDefault(e => e.Id == cartItem.AssignedEmployeeId.Value);
+                
+                if (assignedEmp != null)
+                {
+                    transactionItem.CalculatedCommission = CommissionCalculator.CalculateCommission(transactionItem, assignedEmp);
+                }
+                
+                transaction.Items.Add(transactionItem);
+            }
+
+            DbContext.Transactions.Add(transaction);
+
+            // Also create a completed DraftOrder for Manage Orders visibility
+            var completedOrder = new ELGlamPOS.Models.DraftOrder
+            {
+                BranchId = SessionState.CurrentBranchId!.Value,
+                CreatedByEmployeeId = SessionState.CurrentEmployeeId!.Value,
+                CreatedDate = DateTime.UtcNow,
+                Status = ELGlamPOS.Models.DraftOrderStatus.Completed,
+                CustomerName = string.IsNullOrWhiteSpace(customerName) ? null : customerName,
+                CustomerContactNo = string.IsNullOrWhiteSpace(customerContactNo) ? null : customerContactNo,
+                Note = string.IsNullOrWhiteSpace(note) ? null : note,
+                DiscountAmount = CartState.DiscountAmount,
+                DiscountDescription = BuildFullDiscountDescription(),
+                PaymentMethod = pType.ToString(),
+                Transaction = transaction
+            };
+            foreach (var cartItem in CartState.Items)
+            {
+                completedOrder.Items.Add(new ELGlamPOS.Models.DraftOrderItem
+                {
+                    ServiceItemId = cartItem.ServiceItem.Id,
+                    AssignedEmployeeId = cartItem.AssignedEmployeeId,
+                    FinalPrice = cartItem.FinalPrice
+                });
+            }
+            DbContext.DraftOrders.Add(completedOrder);
+
+            await DbContext.SaveChangesAsync();
+
+            // Fire and forget printer
+            _ = ReceiptPrinter.PrintReceiptAsync(transaction);
+
+            CartState.ClearCart();
+            lastTransactionId = transaction.Id;
+            showSuccessModal = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Database error: " + ex.Message;
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void FinishCheckout()
+    {
+        isLeavingAllowed = true;
+        NavigationManager.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        _navRegistration?.Dispose();
+    }
+}

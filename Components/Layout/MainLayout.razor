@@ -1,0 +1,81 @@
+@inherits LayoutComponentBase
+
+<ErrorBoundary>
+    <ChildContent>
+        <div class="flex flex-col lg:flex-row h-screen bg-el-pink-50 font-sans text-gray-900">
+            <!-- Sidebar — only on large screens -->
+            <aside class="w-56 xl:w-64 glass-panel m-3 hidden lg:flex flex-col overflow-hidden shrink-0">
+                <NavMenu />
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 flex flex-col overflow-hidden m-3 lg:ml-0">
+                <!-- Top bar for mobile/tablet — branding only -->
+                <header class="lg:hidden glass-panel mb-3 px-4 py-2.5 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl overflow-hidden bg-white p-0.5 border border-el-pink-100 shrink-0">
+                            <img src="images/logo.jpg" alt="Logo" class="w-full h-full object-contain" />
+                        </div>
+                        <div>
+                            <span class="text-sm font-bold text-gray-800 leading-none">EL Glamorous</span>
+                            <span class="text-[10px] text-el-pink-500 font-semibold uppercase ml-2">POS</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex h-2.5 w-2.5 shrink-0">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                        </div>
+                        <span class="text-xs text-gray-500 font-medium hidden sm:inline">Online</span>
+                    </div>
+                </header>
+
+                <!-- Body -->
+                <div class="flex-1 overflow-auto rounded-2xl">
+                    @Body
+                </div>
+
+                <!-- Bottom Tab Bar for mobile/tablet -->
+                <nav class="lg:hidden glass-panel mt-3 px-2 py-1.5 flex items-center justify-around shrink-0">
+                    <NavLink class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-el-pink-600 transition-colors text-[11px] font-medium" href="" Match="NavLinkMatch.All">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        Home
+                    </NavLink>
+                    <NavLink class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-el-pink-600 transition-colors text-[11px] font-medium" href="services-admin">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
+                        Services
+                    </NavLink>
+                    <NavLink class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-el-pink-600 transition-colors text-[11px] font-medium" href="transactions">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Transactions
+                    </NavLink>
+                    <NavLink class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-el-pink-600 transition-colors text-[11px] font-medium" href="orders">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Orders
+                    </NavLink>
+                    <NavLink class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-el-pink-600 transition-colors text-[11px] font-medium" href="employees">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        Employees
+                    </NavLink>
+                    <NavLink class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-el-pink-600 transition-colors text-[11px] font-medium" href="settings">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Settings
+                    </NavLink>
+                </nav>
+            </main>
+        </div>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div class="p-8 bg-red-50/90 border-2 border-red-300 rounded-2xl m-8 shadow-xl max-w-4xl mx-auto mt-20">
+            <h1 class="text-2xl font-black text-red-800 mb-4 flex items-center gap-3">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                CRITICAL APP ERROR CAPTURED!
+            </h1>
+            <p class="text-red-700 font-mono text-base mb-6 font-bold">@ex.Message</p>
+            <div class="bg-white p-6 rounded-xl border-2 border-red-100 overflow-auto text-sm text-gray-800 shadow-inner max-h-[500px] whitespace-pre-wrap font-mono">
+                @ex.StackTrace
+            </div>
+            <p class="mt-6 text-sm text-red-600 font-bold">Please copy and paste this entire red box back to the AI assistant to fix it immediately!</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>

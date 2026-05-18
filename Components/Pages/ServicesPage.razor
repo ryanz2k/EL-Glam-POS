@@ -1,0 +1,340 @@
+@page "/services-admin"
+@inject ELGlamPOS.Data.PosDbContext DbContext
+@inject NavigationManager NavigationManager
+
+<div class="h-full flex flex-col p-6 overflow-hidden bg-el-pink-50/30">
+    <div class="flex justify-between items-center mb-6 shrink-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Services Management</h1>
+            <p class="text-gray-500 text-sm">Add, edit, or remove services from the catalog.</p>
+        </div>
+        <button @onclick="OpenAddModal" class="btn-primary px-6 py-2.5 rounded-xl font-bold flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add New Service
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+            @errorMessage
+        </div>
+    }
+
+    <!-- Services Grid -->
+    <div class="flex-1 overflow-auto glass-card rounded-2xl border border-white/40">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50/80 sticky top-0 z-10">
+                <tr>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" @onclick='() => SortTable("Name")'>
+                        <div class="flex items-center gap-1">Service Name @(sortColumn == "Name" ? (sortAscending ? "↑" : "↓") : "")</div>
+                    </th>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" @onclick='() => SortTable("Category")'>
+                        <div class="flex items-center gap-1">Category @(sortColumn == "Category" ? (sortAscending ? "↑" : "↓") : "")</div>
+                    </th>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors text-right" @onclick='() => SortTable("Price")'>
+                        <div class="flex items-center justify-end gap-1">Price @(sortColumn == "Price" ? (sortAscending ? "↑" : "↓") : "")</div>
+                    </th>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100/50">
+                @foreach (var item in SortedServices)
+                {
+                    <tr class="hover:bg-white/60 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" class="w-10 h-10 rounded-lg object-cover border border-gray-200" onerror="this.style.display='none'" />
+                                }
+                                else
+                                {
+                                    <div class="w-10 h-10 rounded-lg bg-el-pink-50 flex items-center justify-center text-el-pink-400 border border-el-pink-100">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    </div>
+                                }
+                                <div>
+                                    <div class="font-bold text-gray-800">@item.Name</div>
+                                    <div class="text-xs text-gray-500 line-clamp-1 w-64">@item.Description</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">@item.Category?.Name</span>
+                        </td>
+                        <td class="px-6 py-4 text-right font-bold text-gray-800">
+                            ₱@item.BasePrice.ToString("N2")
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button @onclick="() => OpenEditModal(item)" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button @onclick="() => RequestDelete(item)" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add / Edit Modal -->
+@if (showFormModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 class="text-xl font-bold text-gray-800">@(editingService.Id == 0 ? "Add New Service" : "Edit Service")</h3>
+                <button @onclick="CloseModals" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <input type="text" @bind="editingService.Name" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea @bind="editingService.Description" rows="2" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select @bind="editingService.CategoryId" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none">
+                        @foreach(var cat in categories)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Base Price (₱)</label>
+                        <input type="number" @bind="editingService.BasePrice" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none" />
+                    </div>
+                    <div class="flex items-center pt-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" @bind="editingService.IsVariablePrice" class="w-5 h-5 rounded text-el-pink-500 focus:ring-el-pink-400" />
+                            <span class="text-sm font-medium text-gray-700">Variable Price?</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Image <span class="text-xs text-gray-400 font-normal">(Optional)</span></label>
+                    <InputFile OnChange="HandleImageUpload" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-el-pink-50 file:text-el-pink-700 hover:file:bg-el-pink-100" accept="image/*" />
+                    @if (!string.IsNullOrEmpty(editingService.ImageUrl))
+                    {
+                        <div class="mt-2 w-16 h-16 rounded-xl overflow-hidden border border-gray-200">
+                            <img src="@editingService.ImageUrl" class="w-full h-full object-cover" />
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
+                <button @onclick="CloseModals" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="SaveService" class="flex-1 py-2.5 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl font-bold transition-all shadow-md">Save Changes</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteModal && serviceToDelete != null)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 text-center p-8">
+            <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Delete Service?</h3>
+            <p class="text-sm text-gray-500 mb-6">Are you sure you want to delete <strong class="text-gray-800">@serviceToDelete.Name</strong>? This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button @onclick="CloseModals" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="ConfirmDelete" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all shadow-md">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<ELGlamPOS.Models.ServiceItem> services = new();
+    private List<ELGlamPOS.Models.ServiceCategory> categories = new();
+    private string errorMessage = "";
+    
+    private string sortColumn = "Name";
+    private bool sortAscending = true;
+
+    private bool showFormModal = false;
+    private bool showDeleteModal = false;
+
+    private ELGlamPOS.Models.ServiceItem editingService = new();
+    private ELGlamPOS.Models.ServiceItem? serviceToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            categories = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(DbContext.ServiceCategories);
+            services = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                DbContext.ServiceItems.Include(s => s.Category).Where(s => s.IsActive));
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to load data: " + ex.Message;
+        }
+    }
+
+    private void SortTable(string column)
+    {
+        if (sortColumn == column)
+            sortAscending = !sortAscending;
+        else
+        {
+            sortColumn = column;
+            sortAscending = true;
+        }
+    }
+
+    private IEnumerable<ELGlamPOS.Models.ServiceItem> SortedServices
+    {
+        get
+        {
+            if (sortColumn == "Name")
+                return sortAscending ? services.OrderBy(s => s.Name) : services.OrderByDescending(s => s.Name);
+            else if (sortColumn == "Category")
+                return sortAscending ? services.OrderBy(s => s.Category?.Name) : services.OrderByDescending(s => s.Category?.Name);
+            else if (sortColumn == "Price")
+                return sortAscending ? services.OrderBy(s => s.BasePrice) : services.OrderByDescending(s => s.BasePrice);
+            return services;
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        editingService = new ELGlamPOS.Models.ServiceItem
+        {
+            IsActive = true,
+            Type = ELGlamPOS.Models.ItemType.Service,
+            CategoryId = categories.FirstOrDefault()?.Id ?? 0
+        };
+        showFormModal = true;
+    }
+
+    private void OpenEditModal(ELGlamPOS.Models.ServiceItem item)
+    {
+        // Clone to prevent direct binding mutations before saving
+        editingService = new ELGlamPOS.Models.ServiceItem
+        {
+            Id = item.Id,
+            Name = item.Name,
+            Description = item.Description,
+            BasePrice = item.BasePrice,
+            IsVariablePrice = item.IsVariablePrice,
+            IsActive = item.IsActive,
+            CategoryId = item.CategoryId,
+            Type = item.Type,
+            ImageUrl = item.ImageUrl
+        };
+        showFormModal = true;
+    }
+
+    private async Task SaveService()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(editingService.Name))
+            {
+                errorMessage = "Service name is required.";
+                return;
+            }
+
+            if (editingService.Id == 0)
+            {
+                DbContext.ServiceItems.Add(editingService);
+            }
+            else
+            {
+                var existing = await DbContext.ServiceItems.FindAsync(editingService.Id);
+                if (existing != null)
+                {
+                    existing.Name = editingService.Name;
+                    existing.Description = editingService.Description;
+                    existing.BasePrice = editingService.BasePrice;
+                    existing.IsVariablePrice = editingService.IsVariablePrice;
+                    existing.CategoryId = editingService.CategoryId;
+                    existing.ImageUrl = editingService.ImageUrl;
+                }
+            }
+
+            await DbContext.SaveChangesAsync();
+            await LoadData();
+            CloseModals();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to save: " + ex.Message;
+        }
+    }
+
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var format = "image/jpeg";
+            var resizedImageFile = await e.File.RequestImageFileAsync(format, 400, 400);
+            var buffer = new byte[resizedImageFile.Size];
+            await resizedImageFile.OpenReadStream(maxAllowedSize: 2048000).ReadAsync(buffer);
+            editingService.ImageUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Image upload failed: " + ex.Message;
+        }
+    }
+
+    private void RequestDelete(ELGlamPOS.Models.ServiceItem item)
+    {
+        serviceToDelete = item;
+        showDeleteModal = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (serviceToDelete != null)
+        {
+            try
+            {
+                var existing = await DbContext.ServiceItems.FindAsync(serviceToDelete.Id);
+                if (existing != null)
+                {
+                    existing.IsActive = false; // Soft delete to preserve history
+                    await DbContext.SaveChangesAsync();
+                    await LoadData();
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "Failed to delete: " + ex.Message;
+            }
+        }
+        CloseModals();
+    }
+
+    private void CloseModals()
+    {
+        showFormModal = false;
+        showDeleteModal = false;
+        serviceToDelete = null;
+        errorMessage = "";
+    }
+}

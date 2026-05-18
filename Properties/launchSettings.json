@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ELGlamPOS": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    },
+    "Windows Machine": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": false
+    }
+  }
+}

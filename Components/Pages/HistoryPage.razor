@@ -1,0 +1,812 @@
+@page "/history"
+@page "/transactions"
+@inject ELGlamPOS.Data.PosDbContext DbContext
+@inject ELGlamPOS.Services.PosSessionState SessionState
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+
+<div class="h-full flex flex-col p-4 sm:p-6 overflow-hidden bg-el-pink-50/30 print:hidden">
+    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-4 shrink-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Reports</h1>
+            <p class="text-gray-500 text-sm">View orders and generate daily sales reports.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+            @if (isAdmin)
+            {
+                <select value="@selectedBranchId" @onchange="OnBranchChanged" class="px-4 py-2.5 bg-white border border-el-pink-200 rounded-xl shadow-sm text-sm text-gray-700 outline-none focus:border-el-pink-400 focus:ring-1 focus:ring-el-pink-400 transition-all">
+                    <option value="0">All Branches</option>
+                    @foreach (var branch in branches)
+                    {
+                        <option value="@branch.Id">@branch.Name</option>
+                    }
+                </select>
+            }
+
+            <input type="date" value="@customStartDate.ToString("yyyy-MM-dd")" @onchange="OnStartDateChanged" class="px-3 py-2.5 bg-white border border-el-pink-200 rounded-xl shadow-sm text-sm text-gray-700 outline-none" />
+            <span class="text-gray-400">to</span>
+            <input type="date" value="@customEndDate.ToString("yyyy-MM-dd")" @onchange="OnEndDateChanged" class="px-3 py-2.5 bg-white border border-el-pink-200 rounded-xl shadow-sm text-sm text-gray-700 outline-none" />
+
+            <button @onclick="ShowSavedReportsModal" class="px-5 py-2.5 bg-white border border-el-pink-200 hover:bg-gray-50 text-gray-700 rounded-xl shadow-sm text-sm font-bold transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                View Saved Reports
+            </button>
+            <button @onclick="ShowReportModal" class="px-5 py-2.5 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl shadow-sm text-sm font-bold transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Generate Report
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 shrink-0">
+            @errorMessage
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="mb-4 p-3 bg-green-50 text-green-600 rounded-xl text-sm border border-green-100 shrink-0">
+            @successMessage
+        </div>
+    }
+
+    <!-- DASHBOARD DETAILS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 shrink-0 print:hidden">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-el-pink-100 flex flex-col justify-center">
+            <span class="text-sm text-gray-500 font-medium mb-1">Gross Revenue</span>
+            <span class="text-2xl font-black text-gray-800">₱@GrossSales.ToString("N2")</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-el-pink-100 flex flex-col justify-center">
+            <span class="text-sm text-gray-500 font-medium mb-1">Total Transactions</span>
+            <span class="text-2xl font-black text-gray-800">@transactions.Count</span>
+        </div>
+        <div class="bg-gradient-to-br from-el-pink-500 to-el-pink-600 p-4 rounded-2xl shadow-sm border border-el-pink-400 flex flex-col justify-center text-white">
+            <span class="text-sm font-medium mb-1 text-white/90">Total Commissions</span>
+            <span class="text-2xl font-black">₱@TotalCommissions.ToString("N2")</span>
+        </div>
+        
+        <!-- Employee Commissions Breakdown -->
+        <div class="col-span-2 md:col-span-4 bg-white p-4 rounded-2xl shadow-sm border border-el-pink-100 mt-2">
+            <h4 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Commissions by Employee</h4>
+            <div class="flex flex-wrap gap-3">
+                @foreach(var ec in EmployeeCommissions)
+                {
+                    <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl">
+                        <span class="text-sm font-medium text-gray-700">@ec.Name:</span>
+                        <span class="text-sm font-bold text-el-pink-600">₱@ec.Total.ToString("N2")</span>
+                    </div>
+                }
+                @if(!EmployeeCommissions.Any())
+                {
+                    <span class="text-sm text-gray-400 italic">No commissions calculated for this period.</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden">
+        <!-- Left Side: Transactions List -->
+        <div class="flex-1 flex flex-col overflow-hidden glass-card rounded-2xl border border-white/40 shadow-sm bg-white/70">
+            <div class="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                <h3 class="font-bold text-gray-800">Transactions List</h3>
+                <span class="text-xs text-gray-500 font-medium px-2 py-1 bg-white rounded-lg border border-gray-200">@transactions.Count Records</span>
+            </div>
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead class="bg-gray-50/80 sticky top-0 z-10">
+                        <tr>
+                            <th class="px-4 py-3 font-bold text-gray-700 border-b border-gray-100 text-xs uppercase tracking-wider">Order No.</th>
+                            <th @onclick='() => Sort("Date")' class="px-4 py-3 font-bold text-gray-700 border-b border-gray-100 text-xs uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">Date @SortIndicator("Date")</th>
+                            <th @onclick='() => Sort("Name")' class="px-4 py-3 font-bold text-gray-700 border-b border-gray-100 text-xs uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">Name @SortIndicator("Name")</th>
+                            <th @onclick='() => Sort("Contact")' class="px-4 py-3 font-bold text-gray-700 border-b border-gray-100 text-xs uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">Contact # @SortIndicator("Contact")</th>
+                            <th class="px-4 py-3 font-bold text-gray-700 border-b border-gray-100 text-xs uppercase tracking-wider">Service</th>
+                            <th class="px-4 py-3 font-bold text-gray-700 border-b border-gray-100 text-xs uppercase tracking-wider">Attendant</th>
+                            <th @onclick='() => Sort("Amount")' class="px-4 py-3 font-bold text-gray-700 border-b border-gray-100 text-xs uppercase tracking-wider text-right cursor-pointer hover:bg-gray-100 transition-colors">Amount @SortIndicator("Amount")</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100/50">
+                        @foreach (var row in ScreenRows)
+                        {
+                            <tr class="hover:bg-white/60 transition-colors @(row.IsDiscount ? "bg-red-50/30" : "")">
+                                <td class="px-4 py-3 text-sm font-bold text-gray-800">#@row.OrderNo.ToString("D6")</td>
+                                <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">@row.Date.ToString("MMM dd, hh:mm tt")</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-800">@(string.IsNullOrEmpty(row.Name) ? "Walk-in" : row.Name)</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">@(row.Contact ?? "—")</td>
+                                <td class="px-4 py-3 text-sm @(row.IsDiscount ? "text-red-500 italic font-medium" : "text-gray-600") truncate">@row.Service</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">@(string.IsNullOrEmpty(row.Attendant) ? "—" : row.Attendant)</td>
+                                <td class="px-4 py-3 text-sm font-bold @(row.IsDiscount ? "text-red-500" : "text-gray-800") text-right">₱@row.Amount.ToString("N2")</td>
+                            </tr>
+                        }
+                        @if (transactions.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="px-4 py-12 text-center text-gray-500 text-sm">No transactions found for this period.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (showReportModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200 print:bg-white print:p-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col max-h-[95vh] overflow-hidden animate-in zoom-in-95 duration-200 border border-el-pink-100 print:shadow-none print:border-none print:max-w-none print:h-auto print:max-h-none print:overflow-visible">
+            
+            <div class="p-4 border-b border-gray-100 bg-el-pink-50/50 flex justify-between items-center shrink-0 print:hidden">
+                <h3 class="font-bold text-gray-800 text-lg">Sales Report</h3>
+                <button @onclick="() => showReportModal = false" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- PRINTABLE CONTAINER: EXACT REPLICA OF THE REGISTRATION FORM + DAILY SALES REPORT -->
+            <div id="printable-report" class="flex-1 overflow-auto bg-white p-8 print:p-0 print:overflow-visible text-black" style="font-family: Arial, sans-serif;">
+                
+                <div class="flex justify-between items-end mb-4 border-b-2 border-black pb-2">
+                    <div class="font-bold">
+                        DATE: <span class="border-b border-black inline-block w-40 text-center">@customStartDate.ToShortDateString() @(customStartDate != customEndDate ? $" - {customEndDate.ToShortDateString()}" : "")</span>
+                    </div>
+                    <div class="text-center font-bold text-xl tracking-wider uppercase flex-1">
+                        REGISTRATION FORM
+                    </div>
+                    <div class="text-right">
+                        <img src="images/logo.jpg" alt="EL Glamorous Logo" class="h-16 w-auto inline-block object-contain" />
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-start">
+                    <!-- LEFT SIDE: TRANSACTIONS TABLE -->
+                    <div class="flex-[3]">
+                        <table class="w-full border-collapse border border-black text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="border border-black p-2 text-center uppercase tracking-wider">ORDER NO.</th>
+                                    <th class="border border-black p-2 text-center uppercase tracking-wider">NAME</th>
+                                    <th class="border border-black p-2 text-center uppercase tracking-wider">CONTACT #</th>
+                                    <th class="border border-black p-2 text-center uppercase tracking-wider">SERVICE</th>
+                                    <th class="border border-black p-2 text-center uppercase tracking-wider">AMOUNT</th>
+                                    <th class="border border-black p-2 text-center uppercase tracking-wider">ATTENDANT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var printRows = GetFlattenedRows(transactions.OrderByDescending(t => t.TransactionDate));
+                                    int totalRows = Math.Max(25, printRows.Count);
+                                    for(int i = 0; i < totalRows; i++)
+                                    {
+                                        if (i < printRows.Count)
+                                        {
+                                            var row = printRows[i];
+
+                                            <tr class="@(row.IsDiscount ? "text-red-600 italic" : "")">
+                                                <td class="border border-black p-1.5 text-center font-mono text-xs">#@row.OrderNo.ToString("D6")</td>
+                                                <td class="border border-black p-1.5 min-h-[1.5rem] truncate max-w-[150px]">@(string.IsNullOrEmpty(row.Name) ? "Walk-in" : row.Name)</td>
+                                                <td class="border border-black p-1.5">@(row.Contact)</td>
+                                                <td class="border border-black p-1.5 truncate max-w-[150px]">@row.Service</td>
+                                                <td class="border border-black p-1.5 text-right font-bold">@row.Amount.ToString("N2")</td>
+                                                <td class="border border-black p-1.5">@row.Attendant</td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td class="border border-black p-1.5 h-7"></td>
+                                                <td class="border border-black p-1.5 h-7"></td>
+                                                <td class="border border-black p-1.5 h-7"></td>
+                                                <td class="border border-black p-1.5 h-7"></td>
+                                                <td class="border border-black p-1.5 h-7"></td>
+                                                <td class="border border-black p-1.5 h-7"></td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- RIGHT SIDE: DAILY SALES REPORT -->
+                    <div class="flex-[1] bg-gray-100 border-2 border-gray-800 p-0 flex flex-col print:bg-white print:border-black">
+                        <div class="font-bold text-center border-b-2 border-gray-800 p-2 uppercase text-sm tracking-widest bg-gray-200 print:bg-gray-200 print:border-black">
+                            DAILY SALES REPORT
+                        </div>
+                        <div class="text-xs flex flex-col bg-white">
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 font-bold flex-1 border-r border-gray-400">Cashier Name</div>
+                                <div class="p-1.5 w-24 text-right">@(isAdmin && selectedBranchId == 0 ? "All Cashiers" : (SessionState.CurrentEmployee?.Name ?? "—"))</div>
+                            </div>
+                            <div class="flex border-b border-gray-400 bg-gray-50 print:bg-gray-100">
+                                <div class="p-1.5 font-bold flex-1 border-r border-gray-400">Gross sales</div>
+                                <div class="p-1.5 w-24 text-right font-bold">@GrossSales.ToString("N2")</div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400">Cash</div>
+                                <div class="p-1.5 w-24 text-right">@CashSales.ToString("N2")</div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400">Gcash</div>
+                                <div class="p-1.5 w-24 text-right">@GCashSales.ToString("N2")</div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400">Maya</div>
+                                <div class="p-1.5 w-24 text-right">@MayaSales.ToString("N2")</div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400">Bank Transfer</div>
+                                <div class="p-1.5 w-24 text-right">@BankSales.ToString("N2")</div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400 text-red-600 print:text-black">Cash Advance</div>
+                                <div class="w-24 border-none p-0">
+                                    <input type="number" @bind="currentReport.CashAdvance" @bind:event="oninput" min="0" step="any" class="w-full h-full p-1.5 text-right outline-none bg-transparent text-red-600 font-bold print:text-black" />
+                                </div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400 text-red-600 print:text-black">Expenses</div>
+                                <div class="w-24 border-none p-0">
+                                    <input type="number" @bind="currentReport.Expenses" @bind:event="oninput" min="0" step="any" class="w-full h-full p-1.5 text-right outline-none bg-transparent text-red-600 font-bold print:text-black" />
+                                </div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400 text-red-600 print:text-black">Pull-out</div>
+                                <div class="w-24 border-none p-0">
+                                    <input type="number" @bind="currentReport.PullOut" @bind:event="oninput" min="0" step="any" class="w-full h-full p-1.5 text-right outline-none bg-transparent text-red-600 font-bold print:text-black" />
+                                </div>
+                            </div>
+                            <div class="flex border-b-2 border-gray-800 bg-gray-200 print:bg-gray-200">
+                                <div class="p-2 font-bold text-sm flex-1 border-r border-gray-400">Net Sales</div>
+                                <div class="p-2 w-24 text-right font-black text-sm">@NetSales.ToString("N2")</div>
+                            </div>
+                            <div class="flex border-b border-gray-400">
+                                <div class="p-1.5 flex-1 border-r border-gray-400 text-black">Opening Cash On Hand</div>
+                                <div class="w-24 border-none p-0">
+                                    @if (hasPriorReport)
+                                    {
+                                        <div class="w-full h-full p-1.5 text-right font-bold text-gray-500">@currentReport.OpeningCashOnHand.ToString("N2")</div>
+                                    }
+                                    else
+                                    {
+                                        <input type="number" @bind="currentReport.OpeningCashOnHand" @bind:event="oninput" min="0" step="any" class="w-full h-full p-1.5 text-right outline-none bg-transparent font-bold text-black" />
+                                    }
+                                </div>
+                            </div>
+                            <div class="flex border-b border-gray-400 bg-gray-100 print:bg-gray-100">
+                                <div class="p-1.5 font-bold flex-1 border-r border-gray-400">Cash On Hand</div>
+                                <div class="p-1.5 w-24 text-right font-bold">@currentReport.ComputeTotalCashOnHand().ToString("N2")</div>
+                            </div>
+                            <div class="font-bold text-center border-b border-gray-400 p-1.5 text-xs tracking-wider bg-gray-50 print:bg-white">
+                                COH Denomination
+                            </div>
+                            
+                            @foreach (var denom in new[] { 1000, 500, 200, 100, 50, 20, 10, 5, 1 })
+                            {
+                                <div class="flex border-b border-gray-400">
+                                    <div class="p-1 font-bold flex-1 border-r border-gray-400 text-right pr-4">@denom x</div>
+                                    <div class="w-24 border-none p-0">
+                                        <input type="number" value="@GetDenomValue(denom)" @onchange="(e) => SetDenomValue(denom, e.Value)" min="0" class="w-full h-full p-1 text-right outline-none bg-transparent" />
+                                    </div>
+                                </div>
+                            }
+                            <div class="flex bg-gray-200 print:bg-gray-200">
+                                <div class="p-1.5 font-bold flex-1 border-r border-gray-400">Total</div>
+                                <div class="p-1.5 w-24 text-right font-bold">@currentReport.ComputeTotalCashOnHand().ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer Actions (Hidden on print) -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50 shrink-0 flex flex-col sm:flex-row gap-3 print:hidden">
+                <div class="flex-1 flex gap-2">
+                    <button @onclick="PrintReport" class="flex-1 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-bold transition-all shadow-sm flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        Print / Save as PDF
+                    </button>
+                </div>
+                @if (!(selectedBranchId == 0 && isAdmin))
+                {
+                    <button @onclick="SaveReport" class="flex-1 py-2.5 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl text-sm font-bold transition-all shadow-md flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        Save Report
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (showSavedReportsModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-200 border border-el-pink-100">
+            <div class="p-4 border-b border-gray-100 bg-el-pink-50/50 flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-gray-800 text-lg">Saved Reports</h3>
+                <button @onclick="() => showSavedReportsModal = false" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-auto p-4 bg-gray-50/30">
+                @if (savedReports.Count == 0)
+                {
+                    <div class="flex flex-col items-center justify-center h-full text-gray-500 py-12">
+                        <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p>No saved reports found.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @foreach (var report in savedReports)
+                        {
+                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-el-pink-300 transition-colors flex flex-col">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-gray-800">
+                                            @report.StartDate.ToShortDateString() @(report.StartDate != report.EndDate ? $" - {report.EndDate.ToShortDateString()}" : "")
+                                        </h4>
+                                        <p class="text-xs text-gray-500">Branch: @(branches.FirstOrDefault(b => b.Id == report.BranchId)?.Name ?? "Current Branch")</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-lg border border-green-100">Saved</span>
+                                </div>
+                                <div class="mt-4 flex gap-2 w-full">
+                                    <button @onclick="() => ViewSavedReportAsync(report)" class="flex-1 py-2 bg-el-pink-50 hover:bg-el-pink-100 text-el-pink-600 font-bold text-sm rounded-lg transition-colors text-center border border-el-pink-200">
+                                        View & Print
+                                    </button>
+                                    @if(isAdmin)
+                                    {
+                                        <button @onclick="() => ConfirmDeleteReport(report)" class="py-2 px-3 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm rounded-lg transition-colors text-center border border-red-200" title="Delete Report">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (showDeleteConfirmModal && pendingDeleteReport != null)
+{
+    <div class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-in zoom-in-95 duration-200 border border-red-100">
+            <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Delete Report?</h2>
+            <p class="text-gray-600 mb-6">This will permanently delete the report for <strong class="font-mono">@pendingDeleteReport.StartDate.ToShortDateString()</strong>. This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button @onclick="() => showDeleteConfirmModal = false" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="ExecuteDeleteReport" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all shadow-md">Delete</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    @@media print {
+        @@page {
+            size: landscape;
+            margin: 0.2in;
+        }
+        body {
+            background: white !important;
+        }
+        .print\:hidden {
+            display: none !important;
+        }
+        .print\:bg-white {
+            background-color: white !important;
+        }
+        .print\:p-0 {
+            padding: 0 !important;
+        }
+        .print\:border-none {
+            border: none !important;
+        }
+        .print\:shadow-none {
+            box-shadow: none !important;
+        }
+    }
+</style>
+
+@code {
+    private bool isAdmin = false;
+    private int selectedBranchId = 0;
+    private List<ELGlamPOS.Models.Branch> branches = new();
+    private List<ELGlamPOS.Models.Transaction> transactions = new();
+    private ELGlamPOS.Models.DailyReport currentReport = new();
+    private List<ELGlamPOS.Models.DailyReport> savedReports = new();
+    
+    private bool showReportModal = false;
+    private bool showSavedReportsModal = false;
+    private bool showDeleteConfirmModal = false;
+    private ELGlamPOS.Models.DailyReport? pendingDeleteReport;
+    private string errorMessage = "";
+    private string successMessage = "";
+    private bool hasPriorReport = false;
+
+    // Date Range Picker
+    private DateTime customStartDate = DateTime.Today;
+    private DateTime customEndDate = DateTime.Today;
+    
+    // Sorting
+    private string sortColumn = "Date";
+    private bool sortAscending = false;
+
+    // Computed totals
+    private decimal GrossSales => transactions.Sum(t => t.TotalAmount);
+    private decimal CashSales => transactions.Sum(t => t.PaymentType == ELGlamPOS.Models.PaymentType.Cash ? t.TotalAmount : (t.PaymentType == ELGlamPOS.Models.PaymentType.Split ? t.CashAmount : 0));
+    private decimal GCashSales => transactions.Sum(t => t.PaymentType == ELGlamPOS.Models.PaymentType.GCash ? t.TotalAmount : (t.PaymentType == ELGlamPOS.Models.PaymentType.Split ? t.GCashAmount : 0));
+    private decimal MayaSales => transactions.Sum(t => t.PaymentType == ELGlamPOS.Models.PaymentType.Maya ? t.TotalAmount : (t.PaymentType == ELGlamPOS.Models.PaymentType.Split ? t.MayaAmount : 0));
+    private decimal BankSales => transactions.Sum(t => t.PaymentType == ELGlamPOS.Models.PaymentType.BankTransfer ? t.TotalAmount : (t.PaymentType == ELGlamPOS.Models.PaymentType.Split ? t.BankTransferAmount : 0));
+    
+    private decimal NetSales => GrossSales - (GCashSales + MayaSales + BankSales + currentReport.CashAdvance + currentReport.Expenses + currentReport.PullOut);
+    private decimal TotalCommissions => transactions.SelectMany(t => t.Items).Sum(i => i.CalculatedCommission);
+    
+    private IEnumerable<dynamic> EmployeeCommissions => transactions
+        .SelectMany(t => t.Items)
+        .Where(i => i.AssignedEmployee != null)
+        .GroupBy(i => i.AssignedEmployee!.Name)
+        .Select(g => new { Name = g.Key, Total = g.Sum(i => i.CalculatedCommission) })
+        .OrderByDescending(x => x.Total);
+
+    private class FlattenedRow
+    {
+        public int OrderNo { get; set; }
+        public DateTime Date { get; set; }
+        public string Name { get; set; } = "";
+        public string? Contact { get; set; }
+        public string Service { get; set; } = "";
+        public string? Attendant { get; set; }
+        public decimal Amount { get; set; }
+        public bool IsDiscount { get; set; }
+    }
+
+    private Dictionary<int, int> transactionToDraftMap = new();
+
+    private List<FlattenedRow> GetFlattenedRows(IEnumerable<ELGlamPOS.Models.Transaction> source)
+    {
+        var printRows = new List<FlattenedRow>();
+        foreach (var t in source)
+        {
+            int displayOrderNo = transactionToDraftMap.TryGetValue(t.Id, out int draftId) ? draftId : t.Id;
+
+            foreach (var i in t.Items)
+            {
+                printRows.Add(new FlattenedRow 
+                { 
+                    IsDiscount = false, 
+                    OrderNo = displayOrderNo, 
+                    Date = t.TransactionDate.ToLocalTime(),
+                    Name = t.CustomerName ?? "", 
+                    Contact = t.CustomerContactNo, 
+                    Service = i.ServiceItem.Name, 
+                    Amount = i.PriceAtTimeOfSale, 
+                    Attendant = i.AssignedEmployee?.Name 
+                });
+            }
+            if (t.DiscountAmount > 0)
+            {
+                printRows.Add(new FlattenedRow 
+                { 
+                    IsDiscount = true, 
+                    OrderNo = displayOrderNo, 
+                    Date = t.TransactionDate.ToLocalTime(),
+                    Name = t.CustomerName ?? "", 
+                    Contact = t.CustomerContactNo, 
+                    Service = "Discount", 
+                    Amount = -t.DiscountAmount, 
+                    Attendant = "" 
+                });
+            }
+        }
+        return printRows;
+    }
+
+    private IEnumerable<FlattenedRow> ScreenRows
+    {
+        get
+        {
+            var query = transactions.AsEnumerable();
+            switch (sortColumn)
+            {
+                case "Date":
+                    query = sortAscending ? query.OrderBy(t => t.TransactionDate) : query.OrderByDescending(t => t.TransactionDate);
+                    break;
+                case "Name":
+                    query = sortAscending ? query.OrderBy(t => t.CustomerName) : query.OrderByDescending(t => t.CustomerName);
+                    break;
+                case "Contact":
+                    query = sortAscending ? query.OrderBy(t => t.CustomerContactNo) : query.OrderByDescending(t => t.CustomerContactNo);
+                    break;
+                case "Amount":
+                    query = sortAscending ? query.OrderBy(t => t.TotalAmount) : query.OrderByDescending(t => t.TotalAmount);
+                    break;
+                default:
+                    query = query.OrderByDescending(t => t.TransactionDate);
+                    break;
+            }
+            return GetFlattenedRows(query);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isAdmin = SessionState.CurrentEmployee?.Role == ELGlamPOS.Models.EmployeeRole.Admin;
+        
+        if (isAdmin)
+        {
+            branches = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(DbContext.Branches);
+            selectedBranchId = 0;
+        }
+        else if (SessionState.CurrentBranchId.HasValue)
+        {
+            selectedBranchId = SessionState.CurrentBranchId.Value;
+        }
+
+        await LoadDataAsync();
+    }
+
+    private void Sort(string column)
+    {
+        if (sortColumn == column)
+        {
+            sortAscending = !sortAscending;
+        }
+        else
+        {
+            sortColumn = column;
+            sortAscending = true; // default to asc when switching columns
+        }
+    }
+
+    private string SortIndicator(string column)
+    {
+        if (sortColumn != column) return "";
+        return sortAscending ? "▲" : "▼";
+    }
+
+    private async Task OnBranchChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            selectedBranchId = val;
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task OnStartDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime val))
+        {
+            customStartDate = val;
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task OnEndDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime val))
+        {
+            customEndDate = val;
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        errorMessage = "";
+        successMessage = "";
+        try
+        {
+            DateTime utcStart = customStartDate.ToUniversalTime();
+            DateTime utcEnd = customEndDate.AddDays(1).AddTicks(-1).ToUniversalTime();
+
+            var query = DbContext.Transactions
+                .Include(t => t.Receptionist)
+                .Include(t => t.Items).ThenInclude(i => i.ServiceItem)
+                .Include(t => t.Items).ThenInclude(i => i.AssignedEmployee)
+                .Where(t => t.TransactionDate >= utcStart && t.TransactionDate <= utcEnd);
+
+            if (selectedBranchId > 0)
+            {
+                query = query.Where(t => t.BranchId == selectedBranchId);
+            }
+
+            transactions = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query);
+
+            var transactionIds = transactions.Select(t => t.Id).ToList();
+            transactionToDraftMap = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync(
+                DbContext.DraftOrders.Where(d => d.TransactionId != null && transactionIds.Contains(d.TransactionId.Value)).Select(d => new { d.Id, d.TransactionId }),
+                d => d.TransactionId!.Value, 
+                d => d.Id);
+
+            int targetBranch = selectedBranchId > 0 ? selectedBranchId : (SessionState.CurrentBranchId ?? 0);
+            if (targetBranch > 0)
+            {
+                var existingReport = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                    DbContext.DailyReports.Where(r => r.BranchId == targetBranch && r.StartDate == customStartDate && r.EndDate == customEndDate));
+                
+                var latestReport = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                    DbContext.DailyReports
+                    .Where(r => r.BranchId == targetBranch && r.StartDate < customStartDate)
+                    .OrderByDescending(r => r.StartDate));
+
+                hasPriorReport = latestReport != null;
+
+                if (existingReport != null)
+                {
+                    currentReport = existingReport;
+                }
+                else
+                {
+                    currentReport = new ELGlamPOS.Models.DailyReport
+                    {
+                        BranchId = targetBranch,
+                        StartDate = customStartDate,
+                        EndDate = customEndDate,
+                        OpeningCashOnHand = latestReport != null ? latestReport.ComputeTotalCashOnHand() : 0
+                    };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to load data: " + ex.Message;
+        }
+    }
+
+    private void ShowReportModal()
+    {
+        showReportModal = true;
+    }
+
+    private async Task ShowSavedReportsModal()
+    {
+        await LoadSavedReportsAsync();
+        showSavedReportsModal = true;
+    }
+
+    private async Task LoadSavedReportsAsync()
+    {
+        try
+        {
+            var query = DbContext.DailyReports.AsQueryable();
+            if (selectedBranchId > 0)
+            {
+                query = query.Where(r => r.BranchId == selectedBranchId);
+            }
+            else if (!isAdmin && SessionState.CurrentBranchId.HasValue)
+            {
+                query = query.Where(r => r.BranchId == SessionState.CurrentBranchId.Value);
+            }
+
+            savedReports = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                query.OrderByDescending(r => r.StartDate));
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to load saved reports: " + ex.Message;
+        }
+    }
+
+    private void ConfirmDeleteReport(ELGlamPOS.Models.DailyReport report)
+    {
+        pendingDeleteReport = report;
+        showDeleteConfirmModal = true;
+    }
+
+    private async Task ExecuteDeleteReport()
+    {
+        showDeleteConfirmModal = false;
+        if (pendingDeleteReport == null) return;
+
+        try
+        {
+            DbContext.DailyReports.Remove(pendingDeleteReport);
+            await DbContext.SaveChangesAsync();
+            successMessage = $"Report for {pendingDeleteReport.StartDate.ToShortDateString()} deleted successfully.";
+            pendingDeleteReport = null;
+            await LoadSavedReportsAsync(); // reload the list
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to delete report: " + ex.Message;
+        }
+    }
+
+    private async Task ViewSavedReportAsync(ELGlamPOS.Models.DailyReport report)
+    {
+        showSavedReportsModal = false;
+        
+        // Update the date pickers to match the report's dates
+        customStartDate = report.StartDate;
+        customEndDate = report.EndDate;
+        
+        // Load the transactions for those dates
+        await LoadDataAsync();
+        
+        // Ensure the currentReport is exactly the one we clicked
+        currentReport = report;
+        
+        // Open the report modal
+        showReportModal = true;
+    }
+
+    private async Task SaveReport()
+    {
+        errorMessage = "";
+        successMessage = "";
+        try
+        {
+            if (currentReport.BranchId == 0)
+            {
+                errorMessage = "Cannot save report: No branch selected.";
+                return;
+            }
+
+            if (currentReport.Id == 0)
+            {
+                DbContext.DailyReports.Add(currentReport);
+            }
+            else
+            {
+                DbContext.DailyReports.Update(currentReport);
+            }
+
+            await DbContext.SaveChangesAsync();
+            successMessage = "Report saved successfully!";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to save report: " + ex.Message;
+        }
+    }
+
+    private async Task PrintReport()
+    {
+        await JSRuntime.InvokeVoidAsync("window.print");
+    }
+
+    // Denomination helpers
+    private int GetDenomValue(int denom) => denom switch
+    {
+        1000 => currentReport.Denom1000,
+        500 => currentReport.Denom500,
+        200 => currentReport.Denom200,
+        100 => currentReport.Denom100,
+        50 => currentReport.Denom50,
+        20 => currentReport.Denom20,
+        10 => currentReport.Denom10,
+        5 => currentReport.Denom5,
+        1 => currentReport.Denom1,
+        _ => 0
+    };
+
+    private void SetDenomValue(int denom, object? value)
+    {
+        if (int.TryParse(value?.ToString(), out int parsed))
+        {
+            parsed = Math.Max(0, parsed);
+            switch (denom)
+            {
+                case 1000: currentReport.Denom1000 = parsed; break;
+                case 500: currentReport.Denom500 = parsed; break;
+                case 200: currentReport.Denom200 = parsed; break;
+                case 100: currentReport.Denom100 = parsed; break;
+                case 50: currentReport.Denom50 = parsed; break;
+                case 20: currentReport.Denom20 = parsed; break;
+                case 10: currentReport.Denom10 = parsed; break;
+                case 5: currentReport.Denom5 = parsed; break;
+                case 1: currentReport.Denom1 = parsed; break;
+            }
+        }
+    }
+}

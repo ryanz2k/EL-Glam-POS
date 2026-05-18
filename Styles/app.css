@@ -1,0 +1,67 @@
+@import "tailwindcss";
+@source "../**/*.razor";
+@source "../**/*.html";
+
+@theme {
+  --color-el-pink-50: #fdfbfb;
+  --color-el-pink-100: #fff0f5;
+  --color-el-pink-200: #f8e8ee;
+  --color-el-pink-300: #ffd1dc;
+  --color-el-pink-400: #ff9eba;
+  --color-el-pink-500: #ff6b9e;
+  --color-el-pink-600: #e8467a;
+  --color-el-pink-700: #b76e79;
+}
+
+body {
+  background-color: var(--color-el-pink-50);
+  background-image: 
+    radial-gradient(at 10% 10%, hsla(339, 100%, 96%, 1) 0px, transparent 40%),
+    radial-gradient(at 90% 90%, hsla(339, 100%, 95%, 1) 0px, transparent 40%);
+  background-attachment: fixed;
+  color: #2d2d2d;
+  font-family: 'Outfit', sans-serif;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(255, 107, 158, 0.1);
+  border-radius: 16px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 107, 158, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255, 107, 158, 0.15);
+  border-color: var(--color-el-pink-300);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-el-pink-500), var(--color-el-pink-400));
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 107, 158, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 158, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+nav a.active {
+  background-color: var(--color-el-pink-100) !important;
+  color: var(--color-el-pink-600) !important;
+}

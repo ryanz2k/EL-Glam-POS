@@ -1,0 +1,399 @@
+@page "/"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Checkout - EL Glam</PageTitle>
+
+<div class="h-full flex flex-col md:flex-row gap-4 p-4">
+    <!-- Services Grid (Left/Top) -->
+    <div class="flex-1 flex flex-col glass-card rounded-2xl overflow-hidden min-w-0">
+        <div class="p-3 sm:p-4 border-b border-el-pink-100/50 bg-white/40 shrink-0 space-y-2">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-800">Services & Products</h2>
+                <p class="text-xs text-gray-400 hidden sm:block">Tap to add</p>
+            </div>
+            <div class="flex flex-row gap-2 w-full">
+                <div class="relative flex-1 min-w-0">
+                    <input type="text" @bind="searchQuery" @bind:event="oninput" placeholder="Search..." class="w-full pl-9 pr-3 py-2 border border-el-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-el-pink-400 focus:border-transparent bg-white/80 shadow-sm" />
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <select @onchange="OnCategoryChanged" class="w-32 sm:w-44 pl-3 pr-6 py-2 border border-el-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-el-pink-400 focus:border-transparent bg-white shadow-sm font-medium text-gray-700 shrink-0 truncate">
+                    <option value="">All Services</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat.Id">@cat.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="flex-1 p-3 sm:p-4 overflow-y-auto overflow-x-hidden bg-white/20">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 w-full">
+                @foreach (var item in GetFilteredItems())
+                {
+                    <button @onclick="() => AddToCart(item)" class="flex flex-col items-center justify-center p-3 sm:p-4 @GetCategoryColor(item.CategoryId) border rounded-3xl hover:shadow-lg transition-all group text-center active:scale-95 w-full">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full bg-white/80 border-2 border-white/60 flex items-center justify-center text-gray-700 mb-2 sm:mb-3 group-hover:scale-110 transition-transform shadow-sm shrink-0 overflow-hidden">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='images/logo.jpg'" />
+                            }
+                            else
+                            {
+                                <img src="images/logo.jpg" class="w-full h-full object-contain p-1.5 opacity-60" />
+                            }
+                        </div>
+                        <span class="font-bold text-gray-800 text-xs sm:text-sm line-clamp-2 leading-tight h-10 flex items-center justify-center break-words w-full">@item.Name</span>
+                        <span class="text-gray-900 font-black mt-1.5 text-sm sm:text-base whitespace-nowrap">@(item.IsVariablePrice ? "from " : "")₱@item.BasePrice.ToString("N2")</span>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart / Order Summary (Right/Bottom) -->
+    <div class="w-full md:w-72 lg:w-80 xl:w-96 glass-card rounded-2xl flex flex-col max-h-[50vh] md:max-h-none md:h-auto overflow-hidden relative shrink-0">
+        <div class="p-5 border-b border-el-pink-100/50 bg-white/60 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800">Current Order</h2>
+            <span class="bg-el-pink-100 text-el-pink-600 px-3 py-1 rounded-full text-xs font-bold">@CartState.Items.Count Items</span>
+        </div>
+        
+        <div class="flex-1 p-4 overflow-y-auto bg-white/40">
+            @if (CartState.Items.Count == 0)
+            {
+                <div class="flex flex-col items-center justify-center h-full text-gray-400 space-y-4">
+                    <div class="w-20 h-20 bg-el-pink-50 rounded-full flex items-center justify-center">
+                        <svg class="w-10 h-10 text-el-pink-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    </div>
+                    <p class="font-medium text-gray-500">Your cart is empty</p>
+                </div>
+            }
+            else
+            {
+                <div class="flex flex-col gap-3">
+                    @foreach (var cartItem in CartState.Items)
+                    {
+                        <div class="p-3 bg-white border border-el-pink-100 rounded-xl shadow-sm relative group">
+                            <button @onclick="() => CartState.RemoveItem(cartItem.Id)" class="absolute -top-2 -right-2 w-6 h-6 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors z-10 shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-bold text-gray-800 text-sm leading-tight pr-4">@cartItem.ServiceItem.Name</span>
+                                <span class="text-el-pink-600 font-bold text-sm shrink-0">₱@cartItem.FinalPrice.ToString("N2")</span>
+                            </div>
+                            <div class="mt-2">
+                                <select class="w-full mt-2 text-xs border border-el-pink-200 rounded-lg p-1 outline-none focus:border-el-pink-400 bg-white"
+                                        @onchange="@(e => AssignEmployeeToItem(cartItem.Id, e))">
+                                    <option value="">Assign Provider...</option>
+                                    @foreach (var emp in branchEmployees)
+                                    {
+                                        <option value="@emp.Id" selected="@(cartItem.AssignedEmployeeId == emp.Id)">@emp.Name (@emp.JobTitle)</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="p-5 border-t border-el-pink-100/50 bg-white/80 rounded-b-2xl">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-gray-500 font-medium text-sm">Subtotal</span>
+                <span class="font-bold text-gray-700 text-sm">₱@CartState.Subtotal.ToString("N2")</span>
+            </div>
+            <div class="flex justify-between items-center mb-5 text-xl font-black">
+                <span class="text-gray-800">Total</span>
+                <span class="text-el-pink-600">₱@CartState.Total.ToString("N2")</span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2">
+                <button style="display:flex;align-items:center;justify-content:center;" class="h-12 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold text-sm transition-colors active:scale-95" @onclick="PromptClear">
+                    Clear
+                </button>
+                <button style="display:flex;align-items:center;justify-content:center;" class="h-12 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-sm transition-colors active:scale-95 disabled:opacity-50" @onclick="PromptDraft" disabled="@(CartState.Items.Count == 0)">
+                    Draft
+                </button>
+                <button style="display:flex;align-items:center;justify-content:center;" class="h-12 bg-gradient-to-r from-el-pink-500 to-el-pink-400 hover:from-el-pink-600 hover:to-el-pink-500 text-white rounded-xl font-bold text-sm transition-colors active:scale-95 disabled:opacity-50 shadow-sm" @onclick="ProceedToCheckout" disabled="@(CartState.Items.Count == 0)">
+                    Checkout
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(checkoutError))
+            {
+                <div class="mt-3 p-2 bg-red-50 text-red-600 text-xs font-medium rounded-lg text-center">
+                    @checkoutError
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* Clear Confirmation *@
+@if (showClearConfirm)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Clear Cart?</h2>
+            <p class="text-gray-600 mb-6">All items in the cart will be removed. This cannot be undone.</p>
+            <div class="flex gap-3">
+                <button @onclick="() => showClearConfirm = false" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="ConfirmClear" class="flex-1 py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold transition-all shadow-md">Clear</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Draft Confirmation *@
+@if (showDraftConfirm)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border border-amber-100">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Save as Draft?</h2>
+            <p class="text-gray-600 mb-6">The current order will be saved as a draft and can be continued later from the Orders page.</p>
+            <div class="flex gap-3">
+                <button @onclick="() => showDraftConfirm = false" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="SaveDraft" class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-all shadow-md">Save Draft</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showPriceModal && pendingVariableItem != null)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-el-pink-100">
+            <div class="p-5 border-b border-el-pink-50 bg-gradient-to-br from-white to-el-pink-50/50">
+                <h3 class="text-lg font-bold text-gray-800">Set Custom Price</h3>
+                <p class="text-sm text-gray-500 mt-1 line-clamp-1">@pendingVariableItem.Name</p>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Final Price (₱)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-2.5 text-gray-500 font-medium">₱</span>
+                        <input type="number" step="0.01" @bind="customPriceInput" class="w-full pl-9 pr-4 py-2.5 border border-el-pink-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-el-pink-400 focus:border-transparent bg-white shadow-sm font-bold text-gray-800" />
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button @onclick="CancelVariablePrice" class="py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-sm transition-all">Cancel</button>
+                    <button @onclick="ConfirmVariablePrice" class="py-2.5 px-4 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl font-bold text-sm transition-all shadow-md">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Inject] private ELGlamPOS.Data.PosDbContext DbContext { get; set; } = default!;
+    [Inject] private ELGlamPOS.Services.CartStateService CartState { get; set; } = default!;
+    [Inject] private ELGlamPOS.Services.PosSessionState SessionState { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    
+    private List<ELGlamPOS.Models.ServiceCategory> categories = new();
+    private List<ELGlamPOS.Models.ServiceItem> allItems = new();
+    private List<ELGlamPOS.Models.Employee> branchEmployees = new();
+    
+    private int? selectedCategoryId;
+    private string searchQuery = string.Empty;
+    private string checkoutError = string.Empty;
+    
+    // Variable Pricing Modal State
+    private bool showPriceModal = false;
+    private ELGlamPOS.Models.ServiceItem? pendingVariableItem = null;
+    private decimal customPriceInput = 0;
+
+    // Confirmation modals
+    private bool showClearConfirm = false;
+    private bool showDraftConfirm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await DbContext.ServiceCategories.ToListAsync();
+        allItems = await DbContext.ServiceItems.Where(i => i.IsActive).ToListAsync();
+        
+        if (SessionState.CurrentBranchId.HasValue)
+        {
+            branchEmployees = await DbContext.Employees
+                .Where(e => e.BranchId == SessionState.CurrentBranchId.Value && e.Role == ELGlamPOS.Models.EmployeeRole.ServiceProvider)
+                .ToListAsync();
+        }
+
+        CartState.OnChange += OnCartStateChanged;
+    }
+
+    private void OnCartStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        CartState.OnChange -= OnCartStateChanged;
+    }
+
+    private IEnumerable<ELGlamPOS.Models.ServiceItem> GetFilteredItems()
+    {
+        var items = allItems.AsEnumerable();
+        if (selectedCategoryId.HasValue)
+            items = items.Where(i => i.CategoryId == selectedCategoryId.Value);
+            
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            items = items.Where(i => i.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || 
+                                     i.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        return items;
+    }
+
+    private string GetCategoryColor(int categoryId)
+    {
+        var colors = new[] { 
+            "bg-pink-100 border-pink-200 hover:border-pink-300", 
+            "bg-blue-100 border-blue-200 hover:border-blue-300", 
+            "bg-green-100 border-green-200 hover:border-green-300", 
+            "bg-yellow-100 border-yellow-200 hover:border-yellow-300", 
+            "bg-purple-100 border-purple-200 hover:border-purple-300", 
+            "bg-orange-100 border-orange-200 hover:border-orange-300",
+            "bg-teal-100 border-teal-200 hover:border-teal-300",
+            "bg-indigo-100 border-indigo-200 hover:border-indigo-300"
+        };
+        return colors[categoryId % colors.Length];
+    }
+
+    private void OnCategoryChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            selectedCategoryId = id;
+        }
+        else
+        {
+            selectedCategoryId = null;
+        }
+    }
+
+    private void AddToCart(ELGlamPOS.Models.ServiceItem item)
+    {
+        checkoutError = string.Empty;
+        if (item.IsVariablePrice)
+        {
+            pendingVariableItem = item;
+            customPriceInput = item.BasePrice; // default to base price
+            showPriceModal = true;
+        }
+        else
+        {
+            CartState.AddItem(item, item.BasePrice);
+        }
+    }
+
+    private void ConfirmVariablePrice()
+    {
+        if (pendingVariableItem != null)
+        {
+            CartState.AddItem(pendingVariableItem, customPriceInput);
+            showPriceModal = false;
+            pendingVariableItem = null;
+        }
+    }
+
+    private void CancelVariablePrice()
+    {
+        showPriceModal = false;
+        pendingVariableItem = null;
+    }
+
+    private void AssignEmployeeToItem(string cartItemId, ChangeEventArgs e)
+    {
+        checkoutError = string.Empty;
+        if (int.TryParse(e.Value?.ToString(), out int empId))
+        {
+            var emp = branchEmployees.FirstOrDefault(x => x.Id == empId);
+            if (emp != null)
+            {
+                CartState.AssignEmployee(cartItemId, empId, emp.Name);
+            }
+        }
+    }
+
+    private void PromptClear()
+    {
+        if (CartState.Items.Count == 0)
+        {
+            ClearCart();
+            return;
+        }
+        showClearConfirm = true;
+    }
+
+    private void ConfirmClear()
+    {
+        showClearConfirm = false;
+        ClearCart();
+    }
+
+    private void ClearCart()
+    {
+        checkoutError = string.Empty;
+        CartState.ClearCart();
+    }
+
+    private void PromptDraft()
+    {
+        if (CartState.Items.Count == 0) return;
+        showDraftConfirm = true;
+    }
+
+    private void ProceedToCheckout()
+    {
+        checkoutError = string.Empty;
+
+        if (CartState.Items.Count == 0) return;
+
+        if (CartState.Items.Any(i => !i.AssignedEmployeeId.HasValue))
+        {
+            checkoutError = "Please assign a Service Provider to all items before checkout.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("/checkout");
+    }
+
+    private async Task SaveDraft()
+    {
+        showDraftConfirm = false;
+        checkoutError = string.Empty;
+        if (CartState.Items.Count == 0) return;
+
+        try
+        {
+            var draft = new ELGlamPOS.Models.DraftOrder
+            {
+                BranchId = SessionState.CurrentBranchId!.Value,
+                CreatedByEmployeeId = SessionState.CurrentEmployeeId!.Value,
+                CreatedDate = DateTime.UtcNow,
+                Status = ELGlamPOS.Models.DraftOrderStatus.Draft,
+                DiscountAmount = CartState.DiscountAmount,
+                DiscountDescription = CartState.DiscountDescription
+            };
+
+            foreach (var cartItem in CartState.Items)
+            {
+                draft.Items.Add(new ELGlamPOS.Models.DraftOrderItem
+                {
+                    ServiceItemId = cartItem.ServiceItem.Id,
+                    AssignedEmployeeId = cartItem.AssignedEmployeeId,
+                    FinalPrice = cartItem.FinalPrice
+                });
+            }
+
+            DbContext.DraftOrders.Add(draft);
+            await DbContext.SaveChangesAsync();
+            CartState.ClearCart();
+            checkoutError = "";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            checkoutError = "Failed to save draft: " + ex.Message;
+        }
+    }
+}

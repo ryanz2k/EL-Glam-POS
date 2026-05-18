@@ -1,0 +1,472 @@
+@page "/employees"
+@inject ELGlamPOS.Data.PosDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject ELGlamPOS.Services.PosSessionState SessionState
+
+<div class="h-full flex flex-col p-6 overflow-hidden bg-el-pink-50/30">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Employee Management</h1>
+            <p class="text-gray-500 text-sm">Manage employees and commission rates.</p>
+        </div>
+        
+        <div class="flex gap-3">
+            <select @bind="selectedBranchId" @bind:after="LoadData" class="px-4 py-2.5 bg-white border border-el-pink-200 rounded-xl shadow-sm text-sm text-gray-700 outline-none focus:border-el-pink-400 focus:ring-1 focus:ring-el-pink-400 transition-all">
+                @foreach (var branch in branches)
+                {
+                    <option value="@branch.Id">@branch.Name</option>
+                }
+            </select>
+            @if (SessionState.CurrentEmployee?.Role == ELGlamPOS.Models.EmployeeRole.Admin)
+            {
+                <button @onclick="OpenAddEmployeeModal" class="btn-primary px-6 py-2.5 rounded-xl font-bold flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Add Employee
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+            @errorMessage
+        </div>
+    }
+
+    <!-- Employees List -->
+    <div class="flex-1 overflow-auto glass-card rounded-2xl border border-white/40">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50/80 sticky top-0 z-10">
+                <tr>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider">Employee</th>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider">Title</th>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider">Commission Rules</th>
+                    <th class="px-6 py-4 font-bold text-gray-700 border-b border-gray-100 text-sm uppercase tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100/50">
+                @foreach (var emp in employees)
+                {
+                    <tr class="hover:bg-gray-100/60 transition-colors border-b border-black odd:bg-white even:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-800">@emp.Name</div>
+                            <div class="text-xs text-gray-500">@emp.Role.ToString()</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">@emp.JobTitle</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                @if (emp.CommissionRules == null || !emp.CommissionRules.Any())
+                                {
+                                    <span class="text-xs text-gray-400 italic">No rules defined</span>
+                                }
+                                else
+                                {
+                                    @foreach (var rule in emp.CommissionRules.OrderByDescending(r => r.Priority))
+                                    {
+                                        <div class="text-xs bg-el-pink-50 text-el-pink-700 px-2 py-1 rounded inline-block w-max mb-1 border border-el-pink-200 shadow-sm">
+                                            <span class="font-bold">@rule.Percentage.ToString("G0")%</span> on @GetRuleDescription(rule)
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            @if (SessionState.CurrentEmployee?.Role == ELGlamPOS.Models.EmployeeRole.Admin)
+                            {
+                                <button @onclick="() => ManageRules(emp)" class="p-2 text-el-pink-500 hover:bg-el-pink-50 rounded-lg transition-colors" title="Manage Commissions">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                                <button @onclick="() => OpenEditEmployeeModal(emp)" class="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </button>
+                                <button @onclick="() => DeleteEmployee(emp)" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Employee Modal -->
+@if (showEmpModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 class="text-xl font-bold text-gray-800">@(editingEmp.Id == 0 ? "Add Employee" : "Edit Employee")</h3>
+                <button @onclick="() => showEmpModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" @bind="editingEmp.Name" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                    <input type="text" @bind="editingEmp.JobTitle" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">System Role</label>
+                    <select @bind="editingEmp.Role" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none">
+                        @foreach (var role in Enum.GetValues<ELGlamPOS.Models.EmployeeRole>())
+                        {
+                            <option value="@role">@role.ToString()</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
+                <button @onclick="() => showEmpModal = false" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-bold transition-all">Cancel</button>
+                <button @onclick="SaveEmployee" class="flex-1 py-2.5 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl font-bold transition-all shadow-md">Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Commission Rules Modal -->
+@if (showRulesModal && currentRulesEmp != null)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Commission Rules</h3>
+                    <p class="text-sm text-gray-500">@currentRulesEmp.Name</p>
+                </div>
+                <button @onclick="() => showRulesModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 flex-1 overflow-auto bg-gray-50/30">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-el-pink-100 mb-6">
+                    <h4 class="font-bold text-gray-800 mb-3 text-sm">Add New Rule</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Percentage (%)</label>
+                            <input type="number" @bind="newRule.Percentage" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-el-pink-400" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Item Type</label>
+                            <select @bind="newRuleType" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-el-pink-400">
+                                <option value="All">All Items</option>
+                                <option value="Service">Services</option>
+                                <option value="Product">Products</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                            <select @bind="newRuleCategory" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-el-pink-400">
+                                <option value="">Any Category</option>
+                                @foreach (var cat in categories)
+                                {
+                                    <option value="@cat.Name">@cat.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Min Price (₱)</label>
+                            <input type="number" @bind="newRule.MinPrice" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-el-pink-400" placeholder="0" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Max Price (₱)</label>
+                            <input type="number" @bind="newRule.MaxPrice" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-el-pink-400" placeholder="0" />
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Specific Services (Optional)</label>
+                        <div class="h-24 overflow-y-auto border border-gray-200 rounded-lg p-2 grid grid-cols-2 gap-2 bg-gray-50/50">
+                            @foreach (var srv in services)
+                            {
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="srv-@srv.Id" 
+                                           checked="@selectedServiceIds.Contains(srv.Id)" 
+                                           @onchange="@((ChangeEventArgs e) => ToggleService(srv.Id, e.Value))" 
+                                           class="text-el-pink-500 rounded border-gray-300 focus:ring-el-pink-500" />
+                                    <label for="srv-@srv.Id" class="text-xs text-gray-700 truncate" title="@srv.Name">@srv.Name</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="mt-3 flex justify-end">
+                        <button @onclick="AddRule" class="px-6 py-2 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-lg font-bold text-sm transition-colors shadow-sm">Add Rule</button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    @foreach (var rule in currentRulesEmp.CommissionRules.OrderByDescending(r => r.Priority))
+                    {
+                        <div class="flex justify-between items-center p-3 bg-white border border-gray-200 rounded-xl">
+                            <div>
+                                <span class="font-bold text-el-pink-600 text-lg">@rule.Percentage.ToString("G0")%</span>
+                                <span class="text-sm text-gray-600 ml-2">
+                                    on @GetRuleDescription(rule)
+                                </span>
+                            </div>
+                            <button @onclick="() => DeleteRule(rule)" class="text-red-400 hover:text-red-600 p-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    }
+                    @if (!currentRulesEmp.CommissionRules.Any())
+                    {
+                        <div class="text-center text-gray-400 text-sm py-4">No rules defined. Add one above.</div>
+                    }
+                </div>
+            </div>
+            
+            <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end shrink-0">
+                <button @onclick="() => showRulesModal = false" class="px-6 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold transition-all shadow-md">Done</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<ELGlamPOS.Models.Branch> branches = new();
+    private List<ELGlamPOS.Models.Employee> employees = new();
+    private List<ELGlamPOS.Models.ServiceCategory> categories = new();
+    private List<ELGlamPOS.Models.ServiceItem> services = new();
+    private int selectedBranchId = 1;
+    private string errorMessage = "";
+
+    private bool showEmpModal = false;
+    private ELGlamPOS.Models.Employee editingEmp = new();
+
+    private bool showRulesModal = false;
+    private ELGlamPOS.Models.Employee? currentRulesEmp;
+    private ELGlamPOS.Models.CommissionRule newRule = new();
+    private string newRuleType = "All";
+    private string newRuleCategory = "";
+    private List<int> selectedServiceIds = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            branches = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(DbContext.Branches);
+            categories = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(DbContext.ServiceCategories);
+            services = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(DbContext.ServiceItems);
+            if (branches.Any())
+            {
+                selectedBranchId = branches.First().Id;
+            }
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Init error: " + ex.Message;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            employees = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                DbContext.Employees.Include(e => e.CommissionRules).Where(e => e.BranchId == selectedBranchId && e.IsActive));
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Data error: " + ex.Message;
+        }
+    }
+
+    private string GetRuleDescription(ELGlamPOS.Models.CommissionRule rule)
+    {
+        var parts = new List<string>();
+        
+        if (rule.TargetItemType.HasValue)
+            parts.Add(rule.TargetItemType.Value.ToString() + "s");
+        else
+            parts.Add("All Items");
+
+        if (!string.IsNullOrEmpty(rule.TargetCategory))
+            parts.Add($"in {rule.TargetCategory}");
+
+        if (!string.IsNullOrEmpty(rule.TargetServiceIds) && services.Any())
+        {
+            var ids = rule.TargetServiceIds.Split(',').Select(idStr => int.TryParse(idStr, out int id) ? id : 0).ToList();
+            var serviceNames = services.Where(s => ids.Contains(s.Id)).Select(s => s.Name).ToList();
+            if (serviceNames.Any())
+            {
+                parts.Add($"({string.Join(", ", serviceNames)})");
+            }
+        }
+
+        if (rule.MinPrice.HasValue)
+            parts.Add($"over ₱{rule.MinPrice}");
+            
+        if (rule.MaxPrice.HasValue)
+            parts.Add($"under ₱{rule.MaxPrice}");
+
+        return string.Join(" ", parts);
+    }
+
+    private void OpenAddEmployeeModal()
+    {
+        editingEmp = new ELGlamPOS.Models.Employee
+        {
+            BranchId = selectedBranchId,
+            Role = ELGlamPOS.Models.EmployeeRole.ServiceProvider
+        };
+        showEmpModal = true;
+    }
+
+    private void OpenEditEmployeeModal(ELGlamPOS.Models.Employee emp)
+    {
+        editingEmp = new ELGlamPOS.Models.Employee
+        {
+            Id = emp.Id,
+            Name = emp.Name,
+            JobTitle = emp.JobTitle,
+            Role = emp.Role,
+            BranchId = emp.BranchId
+        };
+        showEmpModal = true;
+    }
+
+    private async Task SaveEmployee()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(editingEmp.Name))
+            {
+                errorMessage = "Employee name is required";
+                return;
+            }
+
+            if (editingEmp.Id == 0)
+            {
+                DbContext.Employees.Add(editingEmp);
+            }
+            else
+            {
+                var existing = await DbContext.Employees.FindAsync(editingEmp.Id);
+                if (existing != null)
+                {
+                    existing.Name = editingEmp.Name;
+                    existing.JobTitle = editingEmp.JobTitle;
+                    existing.Role = editingEmp.Role;
+                }
+            }
+            await DbContext.SaveChangesAsync();
+            await LoadData();
+            showEmpModal = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Save error: " + ex.Message;
+        }
+    }
+
+    private async Task DeleteEmployee(ELGlamPOS.Models.Employee emp)
+    {
+        try
+        {
+            var existing = await DbContext.Employees.FindAsync(emp.Id);
+            if (existing != null)
+            {
+                existing.IsActive = false;
+                await DbContext.SaveChangesAsync();
+                await LoadData();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Delete error: " + ex.Message;
+        }
+    }
+
+    private void ManageRules(ELGlamPOS.Models.Employee emp)
+    {
+        currentRulesEmp = emp;
+        newRule = new ELGlamPOS.Models.CommissionRule { EmployeeId = emp.Id };
+        newRuleType = "All";
+        newRuleCategory = "";
+        selectedServiceIds.Clear();
+        showRulesModal = true;
+    }
+
+    private void ToggleService(int serviceId, object? checkedValue)
+    {
+        if (checkedValue is bool isChecked)
+        {
+            if (isChecked && !selectedServiceIds.Contains(serviceId))
+            {
+                selectedServiceIds.Add(serviceId);
+            }
+            else if (!isChecked && selectedServiceIds.Contains(serviceId))
+            {
+                selectedServiceIds.Remove(serviceId);
+            }
+        }
+    }
+
+    private async Task AddRule()
+    {
+        if (currentRulesEmp == null) return;
+        try
+        {
+            newRule.Priority = currentRulesEmp.CommissionRules.Count + 1;
+            
+            if (newRuleType == "Service") newRule.TargetItemType = ELGlamPOS.Models.ItemType.Service;
+            else if (newRuleType == "Product") newRule.TargetItemType = ELGlamPOS.Models.ItemType.Product;
+            else newRule.TargetItemType = null; // All
+
+            newRule.TargetCategory = string.IsNullOrWhiteSpace(newRuleCategory) ? null : newRuleCategory;
+            newRule.TargetServiceIds = selectedServiceIds.Any() ? string.Join(",", selectedServiceIds) : null;
+
+            DbContext.CommissionRules.Add(newRule);
+            await DbContext.SaveChangesAsync();
+            
+            // Reload employee to get fresh rules list
+            var freshEmp = await DbContext.Employees.Include(e => e.CommissionRules).FirstOrDefaultAsync(e => e.Id == currentRulesEmp.Id);
+            if (freshEmp != null)
+            {
+                currentRulesEmp = freshEmp;
+                var index = employees.FindIndex(e => e.Id == freshEmp.Id);
+                if (index != -1) employees[index] = freshEmp;
+            }
+
+            newRule = new ELGlamPOS.Models.CommissionRule { EmployeeId = currentRulesEmp.Id };
+            newRuleCategory = "";
+            selectedServiceIds.Clear();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Add rule error: " + ex.Message;
+        }
+    }
+
+    private async Task DeleteRule(ELGlamPOS.Models.CommissionRule rule)
+    {
+        if (currentRulesEmp == null) return;
+        try
+        {
+            DbContext.CommissionRules.Remove(rule);
+            await DbContext.SaveChangesAsync();
+            
+            var freshEmp = await DbContext.Employees.Include(e => e.CommissionRules).FirstOrDefaultAsync(e => e.Id == currentRulesEmp.Id);
+            if (freshEmp != null)
+            {
+                currentRulesEmp = freshEmp;
+                var index = employees.FindIndex(e => e.Id == freshEmp.Id);
+                if (index != -1) employees[index] = freshEmp;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Delete rule error: " + ex.Message;
+        }
+    }
+}

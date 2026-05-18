@@ -1,0 +1,64 @@
+@page "/branch-selection"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using ELGlamPOS.Models
+@using ELGlamPOS.Services
+@using Microsoft.EntityFrameworkCore
+@inject ELGlamPOS.Data.PosDbContext DbContext
+@inject PosSessionState SessionState
+@inject NavigationManager NavigationManager
+
+<div class="min-h-screen flex items-center justify-center bg-el-pink-50 absolute inset-0 z-50">
+    <div class="w-full max-w-2xl glass-panel p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Select Branch</h1>
+            <p class="text-sm text-gray-500 font-medium mt-1">Which branch are you clocking into today?</p>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="flex justify-center p-8">
+                <svg class="animate-spin h-8 w-8 text-el-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach (var branch in branches)
+                {
+                    bool isAssigned = SessionState.CurrentEmployee?.BranchId == branch.Id;
+                    
+                    <button @onclick="() => SelectBranch(branch)" class="flex flex-col items-center justify-center p-6 bg-white border @(isAssigned ? "border-el-pink-400 bg-el-pink-50/50" : "border-el-pink-100") rounded-2xl hover:border-el-pink-300 hover:shadow-md transition-all group text-center active:scale-95 relative">
+                        @if (isAssigned)
+                        {
+                            <span class="absolute top-3 right-3 bg-el-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">PRIMARY</span>
+                        }
+                        
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-el-pink-100 to-white border border-el-pink-100 flex items-center justify-center text-el-pink-500 mb-3 group-hover:scale-110 transition-transform shadow-sm">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        </div>
+                        <span class="font-bold text-gray-800 text-lg">@branch.Name</span>
+                        <span class="text-sm text-gray-500 mt-1">Select to enter POS</span>
+                    </button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Branch> branches = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load branches from DB
+        branches = await DbContext.Branches.ToListAsync();
+        isLoading = false;
+    }
+
+    private void SelectBranch(Branch branch)
+    {
+        SessionState.SetBranch(branch.Id, branch);
+        NavigationManager.NavigateTo("/");
+    }
+}
