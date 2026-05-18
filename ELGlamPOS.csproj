@@ -51,6 +51,7 @@
     </ItemGroup>
 
     <Target Name="Tailwind" BeforeTargets="Build">
+        <Exec Command="npm install" Condition="!Exists('node_modules')" />
         <Exec Command="npm run build:css" />
     </Target>
 
