@@ -3,6 +3,7 @@ using System;
 using ELGlamPOS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ELGlamPOS.Migrations
 {
     [DbContext(typeof(PosDbContext))]
-    partial class PosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260525171641_AddFirebaseSyncSupport")]
+    partial class AddFirebaseSyncSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -90,16 +93,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "d4188399-fd67-4521-888d-1ff665684ac7",
+                            ConcurrencyStamp = "5c4714db-7598-4dfc-81a4-42f7eb2a32fc",
                             Email = "jesa@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 1,
                             LockoutEnabled = false,
                             NormalizedEmail = "JESA@SALON.COM",
                             NormalizedUserName = "JESA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEITyvBYBwpeFgI+ctdHVWgD1s2Hi6g56YpxJrn9waBsM89SwXbA1KfGahsJE4Q8FVA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIycw6CDtkoyrL8IsFFJ967ODYxMbIf0UBtgXLGnq5uXRPfLYXW6XNdKiKZw0zyN+w==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "9dbd0ffb-ef40-4f8b-a79c-fb13aea78768",
+                            SecurityStamp = "197e9821-14f2-44c5-9b5a-31d0c2f22939",
                             TwoFactorEnabled = false,
                             UserName = "jesa@salon.com"
                         },
@@ -107,16 +110,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "0e8a5204-ab8a-4c47-9adf-694c2f454ee1",
+                            ConcurrencyStamp = "714b3295-611a-47cd-9742-6a1daa3eaa85",
                             Email = "marilyn@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 7,
                             LockoutEnabled = false,
                             NormalizedEmail = "MARILYN@SALON.COM",
                             NormalizedUserName = "MARILYN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPC0XUB/qmG+BPuyY7mGwX6U0lslKInz80eSJahJzDU+GJDlRs/jZQcVcstqBKN3ww==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEN1O6xl6MiuBeH0jn6OwEG6hJByWZ+mbHzKyFmpl3nHxsoyFUeFPu8lyzf2yGrxTFg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "716e8fb3-5ce2-4df6-a912-71f8cb9bb336",
+                            SecurityStamp = "2744e35d-1aa9-484c-b6e1-37ce209ff259",
                             TwoFactorEnabled = false,
                             UserName = "marilyn@salon.com"
                         },
@@ -124,16 +127,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "3",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "c9e232e5-17be-4d70-8aa7-0b63459c0ac2",
+                            ConcurrencyStamp = "71621dba-81b1-4d36-9b25-976ab5352888",
                             Email = "rowena@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 13,
                             LockoutEnabled = false,
                             NormalizedEmail = "ROWENA@SALON.COM",
                             NormalizedUserName = "ROWENA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEENtO1SOsTmUFBH5/2zmRM3g7/+q87NEpNH5ao5iqGlPYlqOoC2f93ZRgS7O+xUHtQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO7XGr7RsMPyWpzJxZuAGC6G8SE6leOVQxrTWLmAKWZVOD5wOQooFMhL+Evp2gQcAw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "d3d4b112-9a3e-4e1a-a1cc-fbbdc208e3af",
+                            SecurityStamp = "63e6ade2-de78-44c8-8d01-d8cb16570b06",
                             TwoFactorEnabled = false,
                             UserName = "rowena@salon.com"
                         },
@@ -141,16 +144,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "b114fe62-c8ec-4301-9379-5a44db44d31d",
+                            ConcurrencyStamp = "c107fd74-66b9-4d9d-8e70-e2334fbc3bcc",
                             Email = "jennifer@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 16,
                             LockoutEnabled = false,
                             NormalizedEmail = "JENNIFER@SALON.COM",
                             NormalizedUserName = "JENNIFER@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENAzSMk21mvAq07odj5mm2ljt+mQXat20/MCUO+OXZs+2lUu9lok59yck3ymI/C8qg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHrEu4NWfnnpH5/jH7BzmmM1iUQBIH4DuvRk+xW8/bYrJoasA+m3DbxeoOTCM9m0Ag==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "796bd649-7543-4da3-a275-c55a266a121b",
+                            SecurityStamp = "691cbd7d-ebb8-4c01-a074-b409153b43da",
                             TwoFactorEnabled = false,
                             UserName = "jennifer@salon.com"
                         },
@@ -158,16 +161,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "89dac77c-dfb8-4356-b0a2-059e7187f337",
+                            ConcurrencyStamp = "40444556-43c6-41be-ad82-321800654685",
                             Email = "admin@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 21,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@SALON.COM",
                             NormalizedUserName = "ADMIN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIUO043JFgYTY4hocC7AU2qMuSu99vnkfoFckWzWnnzhLM5ar0HPP6Dpk7jBFeWGdA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPwAWyfqyQ+JoaMB9Ewf6hNPkiQbSrIrGy2/vyLDgDlc8eSZq0o52A3skFFmgxEWPA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "0af9b5c4-975d-4af6-926e-77272815e47d",
+                            SecurityStamp = "fb7c6554-e73e-4892-81b8-4e8290d22343",
                             TwoFactorEnabled = false,
                             UserName = "admin@salon.com"
                         });
@@ -614,9 +617,6 @@ namespace ELGlamPOS.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("AppointmentDate")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("BranchId")
                         .HasColumnType("INTEGER");
@@ -1068,9 +1068,6 @@ namespace ELGlamPOS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Area")
-                        .HasColumnType("INTEGER");
-
                     b.Property<decimal>("BasePrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -1107,7 +1104,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 1,
-                            Area = 0,
                             BasePrice = 399m,
                             CategoryId = 1,
                             Description = "",
@@ -1119,7 +1115,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 2,
-                            Area = 0,
                             BasePrice = 499m,
                             CategoryId = 1,
                             Description = "",
@@ -1131,7 +1126,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 3,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 1,
                             Description = "",
@@ -1143,7 +1137,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 4,
-                            Area = 0,
                             BasePrice = 699m,
                             CategoryId = 1,
                             Description = "",
@@ -1155,7 +1148,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 5,
-                            Area = 0,
                             BasePrice = 899m,
                             CategoryId = 1,
                             Description = "",
@@ -1167,7 +1159,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 6,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 1,
                             Description = "",
@@ -1179,7 +1170,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 7,
-                            Area = 0,
                             BasePrice = 2499m,
                             CategoryId = 1,
                             Description = "",
@@ -1191,7 +1181,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 8,
-                            Area = 0,
                             BasePrice = 1299m,
                             CategoryId = 1,
                             Description = "",
@@ -1203,7 +1192,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 9,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 1,
                             Description = "",
@@ -1215,7 +1203,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 10,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 1,
                             Description = "",
@@ -1227,7 +1214,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 11,
-                            Area = 0,
                             BasePrice = 799m,
                             CategoryId = 2,
                             Description = "",
@@ -1239,7 +1225,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 12,
-                            Area = 0,
                             BasePrice = 799m,
                             CategoryId = 2,
                             Description = "",
@@ -1251,7 +1236,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 13,
-                            Area = 0,
                             BasePrice = 1499m,
                             CategoryId = 2,
                             Description = "",
@@ -1263,7 +1247,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 14,
-                            Area = 0,
                             BasePrice = 499m,
                             CategoryId = 3,
                             Description = "",
@@ -1275,7 +1258,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 15,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 3,
                             Description = "",
@@ -1287,7 +1269,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 16,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 4,
                             Description = "",
@@ -1299,7 +1280,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 17,
-                            Area = 0,
                             BasePrice = 799m,
                             CategoryId = 4,
                             Description = "",
@@ -1311,7 +1291,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 18,
-                            Area = 0,
                             BasePrice = 899m,
                             CategoryId = 4,
                             Description = "",
@@ -1323,7 +1302,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 19,
-                            Area = 0,
                             BasePrice = 2499m,
                             CategoryId = 5,
                             Description = "",
@@ -1335,7 +1313,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 20,
-                            Area = 0,
                             BasePrice = 3999m,
                             CategoryId = 5,
                             Description = "",
@@ -1347,7 +1324,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 21,
-                            Area = 0,
                             BasePrice = 2499m,
                             CategoryId = 5,
                             Description = "",
@@ -1359,7 +1335,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 22,
-                            Area = 0,
                             BasePrice = 3999m,
                             CategoryId = 5,
                             Description = "",
@@ -1371,7 +1346,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 23,
-                            Area = 0,
                             BasePrice = 2499m,
                             CategoryId = 5,
                             Description = "",
@@ -1383,7 +1357,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 24,
-                            Area = 0,
                             BasePrice = 3999m,
                             CategoryId = 5,
                             Description = "",
@@ -1395,7 +1368,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 25,
-                            Area = 0,
                             BasePrice = 199m,
                             CategoryId = 6,
                             Description = "",
@@ -1407,7 +1379,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 26,
-                            Area = 0,
                             BasePrice = 380m,
                             CategoryId = 6,
                             Description = "",
@@ -1419,7 +1390,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 27,
-                            Area = 0,
                             BasePrice = 380m,
                             CategoryId = 6,
                             Description = "",
@@ -1431,7 +1401,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 28,
-                            Area = 0,
                             BasePrice = 380m,
                             CategoryId = 6,
                             Description = "",
@@ -1443,7 +1412,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 29,
-                            Area = 0,
                             BasePrice = 499m,
                             CategoryId = 6,
                             Description = "",
@@ -1455,7 +1423,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 30,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 6,
                             Description = "",
@@ -1467,7 +1434,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 31,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 6,
                             Description = "",
@@ -1479,7 +1445,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 32,
-                            Area = 0,
                             BasePrice = 1699m,
                             CategoryId = 6,
                             Description = "",
@@ -1491,7 +1456,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 33,
-                            Area = 0,
                             BasePrice = 1799m,
                             CategoryId = 6,
                             Description = "",
@@ -1503,7 +1467,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 34,
-                            Area = 0,
                             BasePrice = 1799m,
                             CategoryId = 6,
                             Description = "",
@@ -1515,7 +1478,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 35,
-                            Area = 0,
                             BasePrice = 399m,
                             CategoryId = 7,
                             Description = "",
@@ -1527,7 +1489,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 36,
-                            Area = 0,
                             BasePrice = 449m,
                             CategoryId = 7,
                             Description = "",
@@ -1539,7 +1500,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 37,
-                            Area = 0,
                             BasePrice = 500m,
                             CategoryId = 8,
                             Description = "",
@@ -1551,7 +1511,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 38,
-                            Area = 0,
                             BasePrice = 500m,
                             CategoryId = 8,
                             Description = "",
@@ -1563,7 +1522,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 39,
-                            Area = 0,
                             BasePrice = 800m,
                             CategoryId = 8,
                             Description = "",
@@ -1575,7 +1533,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 40,
-                            Area = 0,
                             BasePrice = 150m,
                             CategoryId = 9,
                             Description = "",
@@ -1587,7 +1544,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 41,
-                            Area = 0,
                             BasePrice = 250m,
                             CategoryId = 9,
                             Description = "",
@@ -1599,7 +1555,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 42,
-                            Area = 0,
                             BasePrice = 1000m,
                             CategoryId = 9,
                             Description = "",
@@ -1611,7 +1566,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 43,
-                            Area = 0,
                             BasePrice = 250m,
                             CategoryId = 10,
                             Description = "",
@@ -1623,7 +1577,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 44,
-                            Area = 0,
                             BasePrice = 350m,
                             CategoryId = 10,
                             Description = "",
@@ -1635,7 +1588,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 45,
-                            Area = 0,
                             BasePrice = 350m,
                             CategoryId = 10,
                             Description = "",
@@ -1647,7 +1599,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 46,
-                            Area = 0,
                             BasePrice = 1500m,
                             CategoryId = 11,
                             Description = "",
@@ -1659,7 +1610,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 47,
-                            Area = 0,
                             BasePrice = 1500m,
                             CategoryId = 11,
                             Description = "",
@@ -1671,7 +1621,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 48,
-                            Area = 0,
                             BasePrice = 2000m,
                             CategoryId = 11,
                             Description = "",
@@ -1683,7 +1632,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 49,
-                            Area = 0,
                             BasePrice = 800m,
                             CategoryId = 11,
                             Description = "",
@@ -1695,7 +1643,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 50,
-                            Area = 0,
                             BasePrice = 1500m,
                             CategoryId = 12,
                             Description = "",
@@ -1707,7 +1654,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 51,
-                            Area = 0,
                             BasePrice = 2500m,
                             CategoryId = 12,
                             Description = "",
@@ -1719,7 +1665,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 52,
-                            Area = 0,
                             BasePrice = 3000m,
                             CategoryId = 12,
                             Description = "",
@@ -1731,7 +1676,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 53,
-                            Area = 0,
                             BasePrice = 1500m,
                             CategoryId = 13,
                             Description = "",
@@ -1743,7 +1687,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 54,
-                            Area = 0,
                             BasePrice = 3000m,
                             CategoryId = 13,
                             Description = "",
@@ -1755,7 +1698,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 55,
-                            Area = 0,
                             BasePrice = 1500m,
                             CategoryId = 14,
                             Description = "",
@@ -1767,7 +1709,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 56,
-                            Area = 0,
                             BasePrice = 2500m,
                             CategoryId = 14,
                             Description = "",
@@ -1779,7 +1720,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 57,
-                            Area = 0,
                             BasePrice = 2500m,
                             CategoryId = 14,
                             Description = "",
@@ -1791,7 +1731,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 58,
-                            Area = 0,
                             BasePrice = 3000m,
                             CategoryId = 15,
                             Description = "",
@@ -1803,7 +1742,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 59,
-                            Area = 0,
                             BasePrice = 3500m,
                             CategoryId = 15,
                             Description = "",
@@ -1815,7 +1753,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 60,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 16,
                             Description = "",
@@ -1827,7 +1764,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 61,
-                            Area = 0,
                             BasePrice = 499m,
                             CategoryId = 16,
                             Description = "",
@@ -1839,7 +1775,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 62,
-                            Area = 0,
                             BasePrice = 899m,
                             CategoryId = 16,
                             Description = "",
@@ -1851,7 +1786,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 63,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 16,
                             Description = "",
@@ -1863,7 +1797,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 64,
-                            Area = 0,
                             BasePrice = 1199m,
                             CategoryId = 16,
                             Description = "",
@@ -1875,7 +1808,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 65,
-                            Area = 0,
                             BasePrice = 499m,
                             CategoryId = 16,
                             Description = "",
@@ -1887,7 +1819,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 66,
-                            Area = 0,
                             BasePrice = 349m,
                             CategoryId = 17,
                             Description = "",
@@ -1899,7 +1830,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 67,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 17,
                             Description = "",
@@ -1911,7 +1841,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 68,
-                            Area = 0,
                             BasePrice = 1499m,
                             CategoryId = 17,
                             Description = "",
@@ -1923,7 +1852,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 69,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 17,
                             Description = "",
@@ -1935,7 +1863,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 70,
-                            Area = 0,
                             BasePrice = 3999m,
                             CategoryId = 17,
                             Description = "",
@@ -1947,7 +1874,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 71,
-                            Area = 0,
                             BasePrice = 5999m,
                             CategoryId = 17,
                             Description = "",
@@ -1959,7 +1885,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 72,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 17,
                             Description = "",
@@ -1971,7 +1896,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 73,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 18,
                             Description = "",
@@ -1983,7 +1907,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 74,
-                            Area = 0,
                             BasePrice = 399m,
                             CategoryId = 18,
                             Description = "",
@@ -1995,7 +1918,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 75,
-                            Area = 0,
                             BasePrice = 349m,
                             CategoryId = 18,
                             Description = "",
@@ -2007,7 +1929,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 76,
-                            Area = 0,
                             BasePrice = 249m,
                             CategoryId = 18,
                             Description = "",
@@ -2019,7 +1940,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 77,
-                            Area = 0,
                             BasePrice = 699m,
                             CategoryId = 18,
                             Description = "",
@@ -2031,7 +1951,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 78,
-                            Area = 0,
                             BasePrice = 150m,
                             CategoryId = 19,
                             Description = "",
@@ -2043,7 +1962,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 79,
-                            Area = 0,
                             BasePrice = 200m,
                             CategoryId = 19,
                             Description = "",
@@ -2055,7 +1973,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 80,
-                            Area = 0,
                             BasePrice = 450m,
                             CategoryId = 19,
                             Description = "",
@@ -2067,7 +1984,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 81,
-                            Area = 0,
                             BasePrice = 230m,
                             CategoryId = 20,
                             Description = "",
@@ -2079,7 +1995,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 82,
-                            Area = 0,
                             BasePrice = 300m,
                             CategoryId = 20,
                             Description = "",
@@ -2091,7 +2006,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 83,
-                            Area = 0,
                             BasePrice = 550m,
                             CategoryId = 20,
                             Description = "",
@@ -2103,7 +2017,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 84,
-                            Area = 0,
                             BasePrice = 550m,
                             CategoryId = 21,
                             Description = "",
@@ -2115,7 +2028,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 85,
-                            Area = 0,
                             BasePrice = 600m,
                             CategoryId = 21,
                             Description = "",
@@ -2127,7 +2039,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 86,
-                            Area = 0,
                             BasePrice = 750m,
                             CategoryId = 21,
                             Description = "",
@@ -2139,7 +2050,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 87,
-                            Area = 0,
                             BasePrice = 350m,
                             CategoryId = 21,
                             Description = "",
@@ -2151,7 +2061,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 88,
-                            Area = 0,
                             BasePrice = 1599m,
                             CategoryId = 22,
                             Description = "",
@@ -2163,7 +2072,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 89,
-                            Area = 0,
                             BasePrice = 1299m,
                             CategoryId = 22,
                             Description = "",
@@ -2175,7 +2083,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 90,
-                            Area = 0,
                             BasePrice = 350m,
                             CategoryId = 23,
                             Description = "",
@@ -2187,7 +2094,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 91,
-                            Area = 0,
                             BasePrice = 10m,
                             CategoryId = 23,
                             Description = "",
@@ -2199,7 +2105,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 92,
-                            Area = 0,
                             BasePrice = 120m,
                             CategoryId = 24,
                             Description = "",
@@ -2211,7 +2116,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 93,
-                            Area = 0,
                             BasePrice = 149m,
                             CategoryId = 24,
                             Description = "",
@@ -2223,7 +2127,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 94,
-                            Area = 0,
                             BasePrice = 149m,
                             CategoryId = 24,
                             Description = "",
@@ -2235,7 +2138,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 95,
-                            Area = 0,
                             BasePrice = 149m,
                             CategoryId = 24,
                             Description = "",
@@ -2247,7 +2149,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 96,
-                            Area = 0,
                             BasePrice = 199m,
                             CategoryId = 24,
                             Description = "",
@@ -2259,7 +2160,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 97,
-                            Area = 0,
                             BasePrice = 699m,
                             CategoryId = 24,
                             Description = "",
@@ -2271,7 +2171,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 98,
-                            Area = 0,
                             BasePrice = 299m,
                             CategoryId = 24,
                             Description = "",
@@ -2283,7 +2182,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 99,
-                            Area = 0,
                             BasePrice = 499m,
                             CategoryId = 24,
                             Description = "",
@@ -2295,7 +2193,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 100,
-                            Area = 0,
                             BasePrice = 699m,
                             CategoryId = 25,
                             Description = "",
@@ -2307,7 +2204,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 101,
-                            Area = 0,
                             BasePrice = 699m,
                             CategoryId = 25,
                             Description = "",
@@ -2319,7 +2215,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 102,
-                            Area = 0,
                             BasePrice = 1099m,
                             CategoryId = 25,
                             Description = "",
@@ -2331,7 +2226,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 103,
-                            Area = 0,
                             BasePrice = 399m,
                             CategoryId = 25,
                             Description = "",
@@ -2343,7 +2237,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 104,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 25,
                             Description = "",
@@ -2355,7 +2248,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 105,
-                            Area = 0,
                             BasePrice = 399m,
                             CategoryId = 25,
                             Description = "",
@@ -2367,7 +2259,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 106,
-                            Area = 0,
                             BasePrice = 599m,
                             CategoryId = 25,
                             Description = "",
@@ -2379,7 +2270,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 107,
-                            Area = 0,
                             BasePrice = 999m,
                             CategoryId = 25,
                             Description = "",
@@ -2391,7 +2281,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 108,
-                            Area = 0,
                             BasePrice = 899m,
                             CategoryId = 25,
                             Description = "",
@@ -2403,7 +2292,6 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 109,
-                            Area = 0,
                             BasePrice = 899m,
                             CategoryId = 25,
                             Description = "",

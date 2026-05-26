@@ -4,6 +4,7 @@ namespace ELGlamPOS.Models
     {
         public int Id { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime? AppointmentDate { get; set; }
         public DraftOrderStatus Status { get; set; } = DraftOrderStatus.Draft;
 
         public string? CustomerName { get; set; }
@@ -22,6 +23,9 @@ namespace ELGlamPOS.Models
 
         public int? TransactionId { get; set; }
         public Transaction? Transaction { get; set; }
+
+        /// <summary>Firebase key of the /appointments record this draft was created from. Null for walk-in orders.</summary>
+        public string? SourceAppointmentKey { get; set; }
 
         public ICollection<DraftOrderItem> Items { get; set; } = new List<DraftOrderItem>();
     }

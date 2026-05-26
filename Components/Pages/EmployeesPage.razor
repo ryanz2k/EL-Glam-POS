@@ -2,6 +2,7 @@
 @inject ELGlamPOS.Data.PosDbContext DbContext
 @inject NavigationManager NavigationManager
 @inject ELGlamPOS.Services.PosSessionState SessionState
+@inject ELGlamPOS.Services.IFirebaseSyncService FirebaseSync
 
 <div class="h-full flex flex-col p-6 overflow-hidden bg-el-pink-50/30">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
@@ -360,6 +361,7 @@
                 }
             }
             await DbContext.SaveChangesAsync();
+            _ = FirebaseSync.PushMasterDataAsync();
             await LoadData();
             showEmpModal = false;
         }
@@ -378,6 +380,7 @@
             {
                 existing.IsActive = false;
                 await DbContext.SaveChangesAsync();
+                _ = FirebaseSync.PushMasterDataAsync();
                 await LoadData();
             }
         }
@@ -428,6 +431,7 @@
 
             DbContext.CommissionRules.Add(newRule);
             await DbContext.SaveChangesAsync();
+            _ = FirebaseSync.PushMasterDataAsync();
             
             // Reload employee to get fresh rules list
             var freshEmp = await DbContext.Employees.Include(e => e.CommissionRules).FirstOrDefaultAsync(e => e.Id == currentRulesEmp.Id);
@@ -455,6 +459,7 @@
         {
             DbContext.CommissionRules.Remove(rule);
             await DbContext.SaveChangesAsync();
+            _ = FirebaseSync.PushMasterDataAsync();
             
             var freshEmp = await DbContext.Employees.Include(e => e.CommissionRules).FirstOrDefaultAsync(e => e.Id == currentRulesEmp.Id);
             if (freshEmp != null)

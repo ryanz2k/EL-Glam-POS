@@ -19,4 +19,10 @@ namespace ELGlamPOS.Models
         Completed,
         Cancelled
     }
+
+    public enum ServiceArea
+    {
+        Clinic,
+        Salon
+    }
 }

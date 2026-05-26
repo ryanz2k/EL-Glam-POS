@@ -1,6 +1,7 @@
 @page "/services-admin"
 @inject ELGlamPOS.Data.PosDbContext DbContext
 @inject NavigationManager NavigationManager
+@inject ELGlamPOS.Services.IFirebaseSyncService FirebaseSync
 
 <div class="h-full flex flex-col p-6 overflow-hidden bg-el-pink-50/30">
     <div class="flex justify-between items-center mb-6 shrink-0">
@@ -8,10 +9,16 @@
             <h1 class="text-2xl font-bold text-gray-800">Services Management</h1>
             <p class="text-gray-500 text-sm">Add, edit, or remove services from the catalog.</p>
         </div>
-        <button @onclick="OpenAddModal" class="btn-primary px-6 py-2.5 rounded-xl font-bold flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Add New Service
-        </button>
+        <div class="flex gap-3">
+            <button @onclick="OpenCategoriesModal" class="btn-primary px-6 py-2.5 rounded-xl font-bold flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Manage Categories
+            </button>
+            <button @onclick="OpenAddModal" class="btn-primary px-6 py-2.5 rounded-xl font-bold flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Add New Service
+            </button>
+        </div>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -103,14 +110,25 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea @bind="editingService.Description" rows="2" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none resize-none"></textarea>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select @bind="editingService.CategoryId" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none">
-                        @foreach(var cat in categories)
-                        {
-                            <option value="@cat.Id">@cat.Name</option>
-                        }
-                    </select>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select @bind="editingService.CategoryId" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none">
+                            @foreach(var cat in categories)
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Area</label>
+                        <select @bind="editingService.Area" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none">
+                            @foreach(var area in Enum.GetValues<ELGlamPOS.Models.ServiceArea>())
+                            {
+                                <option value="@area">@area.ToString()</option>
+                            }
+                        </select>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -138,6 +156,60 @@
             <div class="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
                 <button @onclick="CloseModals" class="flex-1 py-2.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-bold transition-all">Cancel</button>
                 <button @onclick="SaveService" class="flex-1 py-2.5 bg-el-pink-500 hover:bg-el-pink-600 text-white rounded-xl font-bold transition-all shadow-md">Save Changes</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Category Management Modal -->
+@if (showCategoriesModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 class="text-xl font-bold text-gray-800">Manage Categories</h3>
+                <button @onclick="CloseCategoriesModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- Add New -->
+                <div class="flex gap-2 mb-6">
+                    <input type="text" @bind="newCategoryName" placeholder="New category name..." class="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none" />
+                    <button @onclick="AddCategory" class="bg-el-pink-500 hover:bg-el-pink-600 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-sm">Add</button>
+                </div>
+                
+                <!-- Existing -->
+                <div class="max-h-64 overflow-y-auto space-y-2">
+                    @foreach (var cat in categories)
+                    {
+                        <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                            @if (editingCategory?.Id == cat.Id)
+                            {
+                                <input type="text" @bind="editingCategory.Name" class="flex-1 px-3 py-1 mr-2 border border-gray-200 rounded-lg outline-none focus:border-el-pink-400" />
+                                <div class="flex gap-1 shrink-0">
+                                    <button @onclick="SaveCategoryEdit" class="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
+                                    <button @onclick="CancelCategoryEdit" class="p-1.5 text-gray-400 hover:bg-gray-200 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="font-medium text-gray-700">@cat.Name</span>
+                                <div class="flex gap-1 shrink-0">
+                                    <button @onclick="() => StartEditCategory(cat)" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </button>
+                                    <button @onclick="() => DeleteCategory(cat)" class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete Category">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button @onclick="CloseCategoriesModal" class="px-6 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold transition-all shadow-md">Done</button>
             </div>
         </div>
     </div>
@@ -171,9 +243,13 @@
 
     private bool showFormModal = false;
     private bool showDeleteModal = false;
+    private bool showCategoriesModal = false;
 
     private ELGlamPOS.Models.ServiceItem editingService = new();
     private ELGlamPOS.Models.ServiceItem? serviceToDelete;
+    
+    private string newCategoryName = "";
+    private ELGlamPOS.Models.ServiceCategory? editingCategory;
 
     protected override async Task OnInitializedAsync()
     {
@@ -225,9 +301,68 @@
         {
             IsActive = true,
             Type = ELGlamPOS.Models.ItemType.Service,
-            CategoryId = categories.FirstOrDefault()?.Id ?? 0
+            CategoryId = categories.FirstOrDefault()?.Id ?? 0,
+            Area = ELGlamPOS.Models.ServiceArea.Clinic
         };
         showFormModal = true;
+    }
+
+    private void OpenCategoriesModal() { showCategoriesModal = true; }
+    private void CloseCategoriesModal() { showCategoriesModal = false; editingCategory = null; newCategoryName = ""; }
+
+    private async Task AddCategory()
+    {
+        if (string.IsNullOrWhiteSpace(newCategoryName)) return;
+        DbContext.ServiceCategories.Add(new ELGlamPOS.Models.ServiceCategory { Name = newCategoryName.Trim() });
+        await DbContext.SaveChangesAsync();
+        _ = FirebaseSync.PushMasterDataAsync();
+        newCategoryName = "";
+        await LoadData();
+    }
+
+    private void StartEditCategory(ELGlamPOS.Models.ServiceCategory cat)
+    {
+        editingCategory = new ELGlamPOS.Models.ServiceCategory { Id = cat.Id, Name = cat.Name };
+    }
+
+    private void CancelCategoryEdit()
+    {
+        editingCategory = null;
+    }
+
+    private async Task SaveCategoryEdit()
+    {
+        if (editingCategory != null && !string.IsNullOrWhiteSpace(editingCategory.Name))
+        {
+            var existing = await DbContext.ServiceCategories.FindAsync(editingCategory.Id);
+            if (existing != null)
+            {
+                existing.Name = editingCategory.Name.Trim();
+                await DbContext.SaveChangesAsync();
+                _ = FirebaseSync.PushMasterDataAsync();
+                await LoadData();
+            }
+        }
+        editingCategory = null;
+    }
+
+    private async Task DeleteCategory(ELGlamPOS.Models.ServiceCategory cat)
+    {
+        try
+        {
+            var existing = await DbContext.ServiceCategories.FindAsync(cat.Id);
+            if (existing != null)
+            {
+                DbContext.ServiceCategories.Remove(existing);
+                await DbContext.SaveChangesAsync();
+                _ = FirebaseSync.PushMasterDataAsync();
+                await LoadData();
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "Cannot delete category (it may have associated services).";
+        }
     }
 
     private void OpenEditModal(ELGlamPOS.Models.ServiceItem item)
@@ -243,7 +378,8 @@
             IsActive = item.IsActive,
             CategoryId = item.CategoryId,
             Type = item.Type,
-            ImageUrl = item.ImageUrl
+            ImageUrl = item.ImageUrl,
+            Area = item.Area
         };
         showFormModal = true;
     }
@@ -273,10 +409,12 @@
                     existing.IsVariablePrice = editingService.IsVariablePrice;
                     existing.CategoryId = editingService.CategoryId;
                     existing.ImageUrl = editingService.ImageUrl;
+                    existing.Area = editingService.Area;
                 }
             }
 
             await DbContext.SaveChangesAsync();
+            _ = FirebaseSync.PushMasterDataAsync();
             await LoadData();
             CloseModals();
         }
@@ -319,6 +457,7 @@
                 {
                     existing.IsActive = false; // Soft delete to preserve history
                     await DbContext.SaveChangesAsync();
+                    _ = FirebaseSync.PushMasterDataAsync();
                     await LoadData();
                 }
             }

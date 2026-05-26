@@ -21,6 +21,32 @@ namespace ELGlamPOS.Services
         private List<DiscountEntry> _discounts = new();
         public IReadOnlyList<DiscountEntry> Discounts => _discounts.AsReadOnly();
 
+        /// <summary>Firebase key of the appointment this cart was loaded from. Null for walk-in orders.</summary>
+        public string? SourceAppointmentKey { get; private set; }
+
+        public int? SourceDraftOrderId { get; private set; }
+
+        public void SetSourceAppointment(string firebaseKey, int? draftOrderId = null)
+        {
+            SourceAppointmentKey = firebaseKey;
+            SourceDraftOrderId = draftOrderId;
+        }
+
+        /// <summary>Tracks a regular (non-booking) draft so SaveAndLeave updates it instead of duplicating.</summary>
+        public void SetSourceDraftOrder(int draftOrderId) => SourceDraftOrderId = draftOrderId;
+
+        /// <summary>Customer name pre-filled from a booking. Checkout page reads this on init.</summary>
+        public string? BookingCustomerName { get; private set; }
+        public string? BookingCustomerPhone { get; private set; }
+        public string? BookingNote { get; private set; }
+
+        public void SetBookingCustomer(string? name, string? phone, string? note)
+        {
+            BookingCustomerName = name;
+            BookingCustomerPhone = phone;
+            BookingNote = note;
+        }
+
         public event Action? OnChange;
 
         public decimal Subtotal => _items.Sum(i => i.Subtotal);
@@ -172,6 +198,12 @@ namespace ELGlamPOS.Services
         {
             _items.Clear();
             _discounts.Clear();
+            SourceAppointmentKey = null;
+            SourceDraftOrderId = null;
+            BookingCustomerName = null;
+            BookingCustomerPhone = null;
+            BookingNote = null;
+            NotifyStateChanged();
         }
 
         private void NotifyStateChanged() => OnChange?.Invoke();

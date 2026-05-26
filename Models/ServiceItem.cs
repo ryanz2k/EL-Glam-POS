@@ -17,6 +17,8 @@ namespace ELGlamPOS.Models
         
         public ItemType Type { get; set; } = ItemType.Service;
         
+        public ServiceArea Area { get; set; } = ServiceArea.Clinic;
+        
         public int CategoryId { get; set; }
         public ServiceCategory Category { get; set; } = null!;
     }

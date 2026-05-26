@@ -11,8 +11,7 @@ namespace ELGlamPOS.Data
         public PosDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<PosDbContext>();
-            // Use the same connection string you normally use in MauiProgram.cs
-            optionsBuilder.UseSqlite("Filename=elglampos.db");
+            optionsBuilder.UseSqlite("Filename=pos_v3.db");
             return new PosDbContext(optionsBuilder.Options);
         }
     }
@@ -38,17 +37,37 @@ namespace ELGlamPOS.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
-            // Decimal precision mapping
+
+            // ── Decimal precision ──────────────────────────────────────────────────
             modelBuilder.Entity<ServiceItem>().Property(s => s.BasePrice).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<Transaction>().Property(t => t.TotalAmount).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Transaction>().Property(t => t.DiscountAmount).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Transaction>().Property(t => t.CashAmount).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Transaction>().Property(t => t.GCashAmount).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Transaction>().Property(t => t.MayaAmount).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Transaction>().Property(t => t.BankTransferAmount).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<TransactionItem>().Property(ti => ti.PriceAtTimeOfSale).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<TransactionItem>().Property(ti => ti.CalculatedCommission).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<CommissionRule>().Property(cr => cr.Percentage).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<CommissionRule>().Property(cr => cr.MinPrice).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<CommissionRule>().Property(cr => cr.MaxPrice).HasColumnType("decimal(18,2)");
-            modelBuilder.Entity<Transaction>().Property(t => t.DiscountAmount).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<DraftOrderItem>().Property(d => d.FinalPrice).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<DailyReport>().Property(r => r.CashAdvance).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<DailyReport>().Property(r => r.Expenses).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<DailyReport>().Property(r => r.PullOut).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<DailyReport>().Property(r => r.OpeningCashOnHand).HasColumnType("decimal(18,2)");
+
+            // ── Firebase sync columns ──────────────────────────────────────────────
+            modelBuilder.Entity<Transaction>().Property(t => t.FirebaseKey).HasColumnName("FirebaseKey");
+            modelBuilder.Entity<Transaction>().Property(t => t.SyncStatus).HasColumnName("SyncStatus");
+            modelBuilder.Entity<Transaction>().Property(t => t.LastSyncedAt).HasColumnName("LastSyncedAt");
+            modelBuilder.Entity<Transaction>().Property(t => t.SourceAppointmentKey).HasColumnName("SourceAppointmentKey");
+            modelBuilder.Entity<DailyReport>().Property(r => r.FirebaseKey).HasColumnName("FirebaseKey");
+            modelBuilder.Entity<DailyReport>().Property(r => r.SyncStatus).HasColumnName("SyncStatus");
+            modelBuilder.Entity<DailyReport>().Property(r => r.LastSyncedAt).HasColumnName("LastSyncedAt");
+            modelBuilder.Entity<DailyReport>().Property(r => r.SubmittedAt).HasColumnName("SubmittedAt");
+            modelBuilder.Entity<Employee>().Property(e => e.FirebaseNameKey).HasColumnName("FirebaseNameKey");
+            modelBuilder.Entity<DraftOrder>().Property(d => d.SourceAppointmentKey).HasColumnName("SourceAppointmentKey");
 
             // DraftOrder relationships
             modelBuilder.Entity<DraftOrder>()

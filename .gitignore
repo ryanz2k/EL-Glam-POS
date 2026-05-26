@@ -50,6 +50,7 @@ __pycache__/
 *.pyc
 
 ## User-specific / Local Configuration
+appsettings.json
 appsettings.Development.json
 *.local.json
 sqlite_error.txt

@@ -5,6 +5,7 @@
 @inject ELGlamPOS.Data.PosDbContext DbContext
 @inject ELGlamPOS.Services.IReceiptPrinterService ReceiptPrinter
 @inject ELGlamPOS.Services.ICommissionCalculatorService CommissionCalculator
+@inject ELGlamPOS.Services.IFirebaseSyncService FirebaseSync
 @inject IJSRuntime JS
 @implements IDisposable
 
@@ -436,6 +437,16 @@
             NavigationManager.NavigateTo("/");
             return;
         }
+
+        // Auto-fill name and phone from booking. For regular drafts, also restore the note.
+        if (!string.IsNullOrEmpty(CartState.BookingCustomerName))
+            customerName = CartState.BookingCustomerName;
+        if (!string.IsNullOrEmpty(CartState.BookingCustomerPhone))
+            customerContactNo = CartState.BookingCustomerPhone;
+        // Restore note for drafts (SourceAppointmentKey is empty = regular draft, not a Firebase booking)
+        if (!string.IsNullOrEmpty(CartState.BookingNote) && string.IsNullOrEmpty(CartState.SourceAppointmentKey))
+            note = CartState.BookingNote;
+
         _navRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
@@ -466,18 +477,41 @@
         {
             try
             {
-                var draft = new ELGlamPOS.Models.DraftOrder
+                ELGlamPOS.Models.DraftOrder draft;
+
+                if (CartState.SourceDraftOrderId.HasValue)
                 {
-                    BranchId = SessionState.CurrentBranchId!.Value,
-                    CreatedByEmployeeId = SessionState.CurrentEmployeeId!.Value,
-                    CreatedDate = DateTime.UtcNow,
-                    Status = ELGlamPOS.Models.DraftOrderStatus.Draft,
-                    CustomerName = string.IsNullOrWhiteSpace(customerName) ? null : customerName,
-                    CustomerContactNo = string.IsNullOrWhiteSpace(customerContactNo) ? null : customerContactNo,
-                    Note = string.IsNullOrWhiteSpace(note) ? null : note,
-                    DiscountAmount = CartState.DiscountAmount,
-                    DiscountDescription = BuildFullDiscountDescription()
-                };
+                    // Update the existing draft instead of creating a duplicate
+                    draft = await DbContext.DraftOrders
+                        .Include(d => d.Items)
+                        .FirstOrDefaultAsync(d => d.Id == CartState.SourceDraftOrderId.Value)
+                        ?? new ELGlamPOS.Models.DraftOrder();
+
+                    if (draft.Id == 0)
+                    {
+                        DbContext.DraftOrders.Add(draft);
+                    }
+                    else
+                    {
+                        DbContext.DraftOrderItems.RemoveRange(draft.Items);
+                        draft.Items.Clear();
+                    }
+                }
+                else
+                {
+                    draft = new ELGlamPOS.Models.DraftOrder();
+                    DbContext.DraftOrders.Add(draft);
+                }
+
+                draft.BranchId = SessionState.CurrentBranchId!.Value;
+                draft.CreatedByEmployeeId = SessionState.CurrentEmployeeId!.Value;
+                draft.Status = ELGlamPOS.Models.DraftOrderStatus.Draft;
+                draft.CustomerName = string.IsNullOrWhiteSpace(customerName) ? null : customerName;
+                draft.CustomerContactNo = string.IsNullOrWhiteSpace(customerContactNo) ? null : customerContactNo;
+                draft.Note = string.IsNullOrWhiteSpace(note) ? null : note;
+                draft.DiscountAmount = CartState.DiscountAmount;
+                draft.DiscountDescription = BuildFullDiscountDescription();
+
                 foreach (var cartItem in CartState.Items)
                 {
                     draft.Items.Add(new ELGlamPOS.Models.DraftOrderItem
@@ -487,7 +521,6 @@
                         FinalPrice = cartItem.FinalPrice
                     });
                 }
-                DbContext.DraftOrders.Add(draft);
                 await DbContext.SaveChangesAsync();
                 CartState.ClearCart();
             }
@@ -676,6 +709,7 @@
                 Note = string.IsNullOrWhiteSpace(note) ? null : note,
                 DiscountAmount = CartState.DiscountAmount,
                 DiscountDescription = BuildFullDiscountDescription(),
+                SourceAppointmentKey = CartState.SourceAppointmentKey,
                 Items = new List<ELGlamPOS.Models.TransactionItem>()
             };
 
@@ -710,21 +744,38 @@
 
             DbContext.Transactions.Add(transaction);
 
-            // Also create a completed DraftOrder for Manage Orders visibility
-            var completedOrder = new ELGlamPOS.Models.DraftOrder
+            ELGlamPOS.Models.DraftOrder completedOrder;
+            if (CartState.SourceDraftOrderId.HasValue)
             {
-                BranchId = SessionState.CurrentBranchId!.Value,
-                CreatedByEmployeeId = SessionState.CurrentEmployeeId!.Value,
-                CreatedDate = DateTime.UtcNow,
-                Status = ELGlamPOS.Models.DraftOrderStatus.Completed,
-                CustomerName = string.IsNullOrWhiteSpace(customerName) ? null : customerName,
-                CustomerContactNo = string.IsNullOrWhiteSpace(customerContactNo) ? null : customerContactNo,
-                Note = string.IsNullOrWhiteSpace(note) ? null : note,
-                DiscountAmount = CartState.DiscountAmount,
-                DiscountDescription = BuildFullDiscountDescription(),
-                PaymentMethod = pType.ToString(),
-                Transaction = transaction
-            };
+                completedOrder = await DbContext.DraftOrders
+                    .Include(d => d.Items)
+                    .FirstOrDefaultAsync(d => d.Id == CartState.SourceDraftOrderId.Value)
+                    ?? new ELGlamPOS.Models.DraftOrder { Items = new List<ELGlamPOS.Models.DraftOrderItem>() };
+                
+                if (completedOrder.Id == 0) DbContext.DraftOrders.Add(completedOrder);
+                else
+                {
+                    DbContext.DraftOrderItems.RemoveRange(completedOrder.Items);
+                    completedOrder.Items.Clear();
+                }
+            }
+            else
+            {
+                completedOrder = new ELGlamPOS.Models.DraftOrder { Items = new List<ELGlamPOS.Models.DraftOrderItem>() };
+                DbContext.DraftOrders.Add(completedOrder);
+            }
+
+            completedOrder.BranchId = SessionState.CurrentBranchId!.Value;
+            completedOrder.CreatedByEmployeeId = SessionState.CurrentEmployeeId!.Value;
+            completedOrder.Status = ELGlamPOS.Models.DraftOrderStatus.Completed;
+            completedOrder.CustomerName = string.IsNullOrWhiteSpace(customerName) ? null : customerName;
+            completedOrder.CustomerContactNo = string.IsNullOrWhiteSpace(customerContactNo) ? null : customerContactNo;
+            completedOrder.Note = string.IsNullOrWhiteSpace(note) ? null : note;
+            completedOrder.DiscountAmount = CartState.DiscountAmount;
+            completedOrder.DiscountDescription = BuildFullDiscountDescription();
+            completedOrder.PaymentMethod = pType.ToString();
+            completedOrder.Transaction = transaction;
+
             foreach (var cartItem in CartState.Items)
             {
                 completedOrder.Items.Add(new ELGlamPOS.Models.DraftOrderItem
@@ -734,12 +785,17 @@
                     FinalPrice = cartItem.FinalPrice
                 });
             }
-            DbContext.DraftOrders.Add(completedOrder);
+            
+            if (!string.IsNullOrEmpty(CartState.SourceAppointmentKey))
+            {
+                _ = FirebaseSync.UpdateAppointmentStatusAsync(CartState.SourceAppointmentKey, "completed");
+            }
 
             await DbContext.SaveChangesAsync();
 
-            // Fire and forget printer
+            // Fire and forget: print receipt + push to Firebase
             _ = ReceiptPrinter.PrintReceiptAsync(transaction);
+            _ = FirebaseSync.PushPendingTransactionsAsync();
 
             CartState.ClearCart();
             lastTransactionId = transaction.Id;

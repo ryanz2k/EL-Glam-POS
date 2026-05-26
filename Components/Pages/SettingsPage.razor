@@ -1,8 +1,11 @@
 @page "/settings"
 @using Microsoft.AspNetCore.Identity
 @using ELGlamPOS.Models
+@using ELGlamPOS.Models.Firebase
 @inject UserManager<ApplicationUser> UserManager
 @inject ELGlamPOS.Services.PosSessionState SessionState
+@inject ELGlamPOS.Data.PosDbContext DbContext
+@inject ELGlamPOS.Services.IFirebaseSyncService FirebaseSync
 
 <div class="h-full flex flex-col p-6 overflow-hidden bg-el-pink-50/30">
     <div class="mb-6 shrink-0">
@@ -11,132 +14,403 @@
     </div>
 
     <div class="flex-1 overflow-auto">
-        <div class="max-w-md bg-white p-8 rounded-2xl border border-el-pink-100 shadow-sm">
-            @if (isLoading)
-            {
-                <div class="flex items-center justify-center p-8">
-                    <svg class="animate-spin h-8 w-8 text-el-pink-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                </div>
-            }
-            else if (currentUser == null)
-            {
-                <div class="p-4 bg-yellow-50 text-yellow-800 rounded-xl text-sm">
-                    No active user session found. Please log out and log back in.
-                </div>
-            }
-            else
-            {
-                <EditForm Model="model" OnValidSubmit="SaveSettings">
-                    <DataAnnotationsValidator />
-                    
-                    @if (!string.IsNullOrEmpty(statusMessage))
+        @if (isLoading)
+        {
+            <div class="flex items-center justify-center p-16">
+                <svg class="animate-spin h-10 w-10 text-el-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </div>
+        }
+        else
+        {
+            <!-- 3-col grid for admin, single col otherwise -->
+            <div class="grid @(isAdmin ? "grid-cols-1 xl:grid-cols-3" : "grid-cols-1") gap-6 items-start max-w-7xl">
+
+                <!-- ── My Account ───────────────────────────────────────────── -->
+                <div class="bg-white p-8 rounded-2xl border border-el-pink-100 shadow-sm">
+                    <h2 class="text-lg font-bold text-gray-800 mb-5">My Account</h2>
+
+                    @if (currentUser == null)
                     {
-                        <div class="mb-6 p-3 rounded-xl text-sm font-medium flex items-center gap-2 @(isSuccess ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100")">
-                            @if (isSuccess)
-                            {
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            }
-                            else
-                            {
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            }
-                            @statusMessage
+                        <div class="p-4 bg-yellow-50 text-yellow-800 rounded-xl text-sm">
+                            No active user session found. Please log out and log back in.
                         </div>
                     }
+                    else
+                    {
+                        <EditForm Model="model" OnValidSubmit="SaveSettings">
+                            <DataAnnotationsValidator />
 
-                    <div class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                            <InputText @bind-Value="model.Email" type="email" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all" />
+                            @if (!string.IsNullOrEmpty(statusMessage))
+                            {
+                                <div class="mb-5 p-3 rounded-xl text-sm font-medium flex items-center gap-2 @(isSuccess ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100")">
+                                    @if (isSuccess)
+                                    {
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    }
+                                    else
+                                    {
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    }
+                                    @statusMessage
+                                </div>
+                            }
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+                                    <InputText @bind-Value="model.Email" type="email" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all text-sm" />
+                                </div>
+
+                                <hr class="border-gray-100" />
+
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">New Password</label>
+                                    <InputText @bind-Value="model.NewPassword" type="password" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all text-sm" placeholder="Leave blank to keep current" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Confirm New Password</label>
+                                    <InputText @bind-Value="model.ConfirmPassword" type="password" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all text-sm" placeholder="Confirm new password" />
+                                </div>
+
+                                <div class="pt-2">
+                                    <button type="submit" disabled="@isSaving" class="w-full py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold transition-all shadow-md disabled:opacity-50 flex justify-center items-center gap-2 text-sm">
+                                        @if (isSaving)
+                                        {
+                                            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            <span>Saving...</span>
+                                        }
+                                        else { <span>Save Changes</span> }
+                                    </button>
+                                </div>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+
+                <!-- ── Admin: Manage Receptionist Accounts ──────────────────── -->
+                @if (isAdmin)
+                {
+                        <!-- Create Account form -->
+                        <div class="bg-white p-8 rounded-2xl border border-el-pink-100 shadow-sm">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h2 class="text-lg font-bold text-gray-800">Create Receptionist Account</h2>
+                                <span class="px-2 py-0.5 bg-el-pink-50 text-el-pink-600 border border-el-pink-200 rounded-full text-xs font-bold">Admin</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-5">
+                                Accounts sync via Firebase — once created here, the receptionist can log in on any device connected to the same Firebase project.
+                            </p>
+
+                            @if (!string.IsNullOrEmpty(createStatusMessage))
+                            {
+                                <div class="mb-4 p-3 rounded-xl text-sm font-medium flex items-center gap-2 @(createIsSuccess ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100")">
+                                    @if (createIsSuccess)
+                                    {
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    }
+                                    else
+                                    {
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    }
+                                    @createStatusMessage
+                                </div>
+                            }
+
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                                    <input type="text" @bind="newUser.FullName" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all text-sm" placeholder="e.g. Jane Reyes" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Email / Username</label>
+                                    <input type="email" @bind="newUser.Email" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all text-sm" placeholder="receptionist@elglam.com" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
+                                    <input type="password" @bind="newUser.Password" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all text-sm" placeholder="At least 6 characters" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Assign Branch</label>
+                                    <select @bind="newUser.BranchId" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all bg-white text-sm">
+                                        <option value="0">— Select Branch —</option>
+                                        @foreach (var branch in branches)
+                                        {
+                                            <option value="@branch.Id">@branch.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="pt-1">
+                                    <button @onclick="CreateReceptionistAccount" disabled="@isCreating"
+                                            class="w-full py-3 bg-gradient-to-r from-el-pink-500 to-el-pink-400 hover:from-el-pink-600 hover:to-el-pink-500 text-white rounded-xl font-bold transition-all shadow-md disabled:opacity-50 flex justify-center items-center gap-2 text-sm">
+                                        @if (isCreating)
+                                        {
+                                            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            <span>Creating...</span>
+                                        }
+                                        else
+                                        {
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                                            <span>Create Account</span>
+                                        }
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
-                        <hr class="border-gray-100 my-6" />
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">New Password</label>
-                            <InputText @bind-Value="model.NewPassword" type="password" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all" placeholder="Leave blank to keep current password" />
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Confirm New Password</label>
-                            <InputText @bind-Value="model.ConfirmPassword" type="password" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all" placeholder="Confirm new password" />
-                        </div>
-
-                        <div class="pt-4">
-                            <button type="submit" disabled="@isSaving" class="w-full py-3 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold transition-all shadow-md disabled:opacity-50 flex justify-center items-center gap-2">
-                                @if (isSaving)
+                        <!-- Existing accounts -->
+                        @if (receptionistAccounts.Any())
+                        {
+                            <div class="bg-white p-6 rounded-2xl border border-el-pink-100 shadow-sm">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h2 class="text-base font-bold text-gray-800">Receptionist Accounts</h2>
+                                    <button @onclick="SyncAccountsFromFirebase" disabled="@isSyncing"
+                                            class="px-3 py-1.5 text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-lg transition-all flex items-center gap-1.5">
+                                        @if (isSyncing)
+                                        {
+                                            <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        }
+                                        else
+                                        {
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                        }
+                                        Sync from Firebase
+                                    </button>
+                                </div>
+                                @if (!string.IsNullOrEmpty(syncStatusMessage))
                                 {
-                                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                    <span>Saving...</span>
+                                    <div class="mb-3 p-2.5 rounded-lg text-xs font-medium @(syncIsSuccess ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600")">@syncStatusMessage</div>
                                 }
-                                else
-                                {
-                                    <span>Save Changes</span>
-                                }
-                            </button>
-                        </div>
-                    </div>
-                </EditForm>
-            }
-        </div>
+                                <div class="space-y-2">
+                                    @foreach (var acct in receptionistAccounts)
+                                    {
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                            <div>
+                                                <div class="font-bold text-gray-800 text-sm">@acct.EmployeeName</div>
+                                                <div class="text-xs text-gray-500">@acct.Email</div>
+                                                <div class="text-xs text-el-pink-600 font-medium">@acct.BranchName</div>
+                                            </div>
+                                            <button @onclick="() => ConfirmResetPassword(acct)"
+                                                    class="px-3 py-1.5 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-all">
+                                                Reset PW
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                }
+            </div>
+        }
     </div>
 </div>
 
+@* Reset Password Modal *@
+@if (showResetModal && pendingResetAccount != null)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full border border-amber-100">
+            <h2 class="text-xl font-bold text-gray-800 mb-1">Reset Password</h2>
+            <p class="text-sm text-gray-500 mb-5">Set a new password for <strong>@pendingResetAccount.EmployeeName</strong>. This will sync to all devices via Firebase.</p>
+
+            @if (!string.IsNullOrEmpty(resetStatusMessage))
+            {
+                <div class="mb-4 p-3 rounded-xl text-sm font-medium @(resetIsSuccess ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-600 border border-red-100")">
+                    @resetStatusMessage
+                </div>
+            }
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">New Password</label>
+                    <input type="password" @bind="resetPassword" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-el-pink-400 outline-none transition-all text-sm" placeholder="At least 6 characters" />
+                </div>
+                <div class="flex gap-3 pt-1">
+                    <button @onclick="() => showResetModal = false" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all text-sm">Cancel</button>
+                    <button @onclick="ExecuteResetPassword" disabled="@isResetting"
+                            class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-all shadow-md disabled:opacity-50 text-sm">
+                        @(isResetting ? "Saving..." : "Reset")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    // ── My Account ─────────────────────────────────────────────────
     private ApplicationUser? currentUser;
     private SettingsModel model = new();
     private bool isLoading = true;
     private bool isSaving = false;
+    private bool isAdmin = false;
     private string statusMessage = "";
     private bool isSuccess = false;
 
+    // ── Admin: Create Account ──────────────────────────────────────
+    private List<Branch> branches = new();
+    private List<ReceptionistAccountInfo> receptionistAccounts = new();
+    private NewReceptionistModel newUser = new();
+    private bool isCreating = false;
+    private string createStatusMessage = "";
+    private bool createIsSuccess = false;
+
+    // ── Sync ───────────────────────────────────────────────────────
+    private bool isSyncing = false;
+    private string syncStatusMessage = "";
+    private bool syncIsSuccess = false;
+
+    // ── Reset Password Modal ───────────────────────────────────────
+    private bool showResetModal = false;
+    private ReceptionistAccountInfo? pendingResetAccount;
+    private string resetPassword = "";
+    private bool isResetting = false;
+    private string resetStatusMessage = "";
+    private bool resetIsSuccess = false;
+
     protected override async Task OnInitializedAsync()
     {
+        isAdmin = SessionState.CurrentEmployee?.Role == EmployeeRole.Admin;
+
         if (SessionState.CurrentUser != null)
         {
             currentUser = await UserManager.FindByIdAsync(SessionState.CurrentUser.Id);
             if (currentUser != null)
-            {
                 model.Email = currentUser.Email ?? "";
+        }
+
+        if (isAdmin)
+        {
+            branches = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions
+                .ToListAsync(DbContext.Branches);
+            await LoadReceptionistAccounts();
+        }
+
+        isLoading = false;
+    }
+
+    private async Task LoadReceptionistAccounts()
+    {
+        receptionistAccounts.Clear();
+        var receptionistEmployees = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions
+            .ToListAsync(DbContext.Employees
+                .Include(e => e.Branch)
+                .Where(e => e.Role == EmployeeRole.Receptionist && e.IsActive));
+
+        foreach (var emp in receptionistEmployees)
+        {
+            var appUser = UserManager.Users.FirstOrDefault(u => u.EmployeeId == emp.Id);
+            if (appUser != null)
+            {
+                receptionistAccounts.Add(new ReceptionistAccountInfo
+                {
+                    UserId = appUser.Id,
+                    EmployeeId = emp.Id,
+                    EmployeeName = emp.Name,
+                    Email = appUser.Email ?? "",
+                    BranchName = emp.Branch?.Name ?? "—"
+                });
             }
         }
-        isLoading = false;
+    }
+
+    // ── Sync from Firebase → create missing local accounts ─────────
+    private async Task SyncAccountsFromFirebase()
+    {
+        isSyncing = true;
+        syncStatusMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            var firebaseAccounts = await FirebaseSync.PullAccountsAsync();
+            int created = 0;
+            int updated = 0;
+
+            foreach (var fa in firebaseAccounts)
+            {
+                if (string.IsNullOrWhiteSpace(fa.Email) || string.IsNullOrWhiteSpace(fa.PasswordToken))
+                    continue;
+
+                var existing = await UserManager.FindByEmailAsync(fa.Email);
+                if (existing == null)
+                {
+                    // Create missing employee record
+                    var employee = DbContext.Employees.FirstOrDefault(e =>
+                        e.Name == fa.Name && e.BranchId == fa.BranchId && e.Role == EmployeeRole.Receptionist);
+
+                    if (employee == null)
+                    {
+                        employee = new Employee
+                        {
+                            Name = fa.Name,
+                            Role = EmployeeRole.Receptionist,
+                            JobTitle = "Receptionist",
+                            BranchId = fa.BranchId,
+                            IsActive = true
+                        };
+                        DbContext.Employees.Add(employee);
+                        await DbContext.SaveChangesAsync();
+                    }
+
+                    var newAppUser = new ApplicationUser
+                    {
+                        UserName = fa.Email,
+                        Email = fa.Email,
+                        EmailConfirmed = true,
+                        EmployeeId = employee.Id
+                    };
+                    var result = await UserManager.CreateAsync(newAppUser, fa.PasswordToken);
+                    if (result.Succeeded) created++;
+                }
+                else
+                {
+                    // Update password if token changed
+                    var removeResult = await UserManager.RemovePasswordAsync(existing);
+                    if (removeResult.Succeeded)
+                    {
+                        var addResult = await UserManager.AddPasswordAsync(existing, fa.PasswordToken);
+                        if (addResult.Succeeded) updated++;
+                    }
+                }
+            }
+
+            syncStatusMessage = $"Sync complete. {created} created, {updated} updated.";
+            syncIsSuccess = true;
+            await LoadReceptionistAccounts();
+        }
+        catch (Exception ex)
+        {
+            syncStatusMessage = "Sync failed: " + ex.Message;
+            syncIsSuccess = false;
+        }
+        finally
+        {
+            isSyncing = false;
+        }
     }
 
     private async Task SaveSettings()
     {
         if (currentUser == null) return;
-        
+
         isSaving = true;
         statusMessage = "";
         StateHasChanged();
 
         try
         {
-            // Validate password match if a new password is provided
             if (!string.IsNullOrEmpty(model.NewPassword))
             {
                 if (model.NewPassword != model.ConfirmPassword)
-                {
-                    statusMessage = "Passwords do not match.";
-                    isSuccess = false;
-                    return;
-                }
-                
-                // Password meets basic requirements
+                { statusMessage = "Passwords do not match."; isSuccess = false; return; }
                 if (model.NewPassword.Length < 6)
-                {
-                    statusMessage = "Password must be at least 6 characters.";
-                    isSuccess = false;
-                    return;
-                }
+                { statusMessage = "Password must be at least 6 characters."; isSuccess = false; return; }
             }
 
-            // Update Email
             if (currentUser.Email != model.Email && !string.IsNullOrWhiteSpace(model.Email))
             {
                 currentUser.Email = model.Email;
-                currentUser.UserName = model.Email; // Keep username synced with email
+                currentUser.UserName = model.Email;
                 var emailResult = await UserManager.UpdateAsync(currentUser);
                 if (!emailResult.Succeeded)
                 {
@@ -146,25 +420,24 @@
                 }
             }
 
-            // Update Password
             if (!string.IsNullOrEmpty(model.NewPassword))
             {
                 var removeResult = await UserManager.RemovePasswordAsync(currentUser);
-                if (removeResult.Succeeded)
+                if (!removeResult.Succeeded) { statusMessage = "Failed to remove old password."; isSuccess = false; return; }
+
+                var addResult = await UserManager.AddPasswordAsync(currentUser, model.NewPassword);
+                if (!addResult.Succeeded) { statusMessage = "Failed to set new password."; isSuccess = false; return; }
+
+                // If this user is a receptionist, sync password to Firebase too
+                var emp = SessionState.CurrentEmployee;
+                if (emp != null && emp.Role == EmployeeRole.Receptionist)
                 {
-                    var addResult = await UserManager.AddPasswordAsync(currentUser, model.NewPassword);
-                    if (!addResult.Succeeded)
+                    _ = Task.Run(async () =>
                     {
-                        statusMessage = "Failed to set new password.";
-                        isSuccess = false;
-                        return;
-                    }
-                }
-                else
-                {
-                    statusMessage = "Failed to remove old password.";
-                    isSuccess = false;
-                    return;
+                        try { await ((ELGlamPOS.Services.FirebaseSyncService)FirebaseSync)
+                            .PushAccountWithPasswordAsync(currentUser.Email!, emp.Id, model.NewPassword); }
+                        catch { /* best-effort */ }
+                    });
                 }
             }
 
@@ -175,7 +448,7 @@
         }
         catch (Exception ex)
         {
-            statusMessage = "Error saving settings: " + ex.Message;
+            statusMessage = "Error: " + ex.Message;
             isSuccess = false;
         }
         finally
@@ -184,10 +457,154 @@
         }
     }
 
+    private async Task CreateReceptionistAccount()
+    {
+        createStatusMessage = "";
+
+        if (string.IsNullOrWhiteSpace(newUser.FullName))
+        { createStatusMessage = "Full name is required."; createIsSuccess = false; return; }
+        if (string.IsNullOrWhiteSpace(newUser.Email))
+        { createStatusMessage = "Email is required."; createIsSuccess = false; return; }
+        if (string.IsNullOrWhiteSpace(newUser.Password) || newUser.Password.Length < 6)
+        { createStatusMessage = "Password must be at least 6 characters."; createIsSuccess = false; return; }
+        if (newUser.BranchId == 0)
+        { createStatusMessage = "Please select a branch."; createIsSuccess = false; return; }
+
+        isCreating = true;
+        StateHasChanged();
+
+        try
+        {
+            var existing = await UserManager.FindByEmailAsync(newUser.Email);
+            if (existing != null)
+            { createStatusMessage = "An account with that email already exists."; createIsSuccess = false; return; }
+
+            var employee = new Employee
+            {
+                Name = newUser.FullName,
+                Role = EmployeeRole.Receptionist,
+                JobTitle = "Receptionist",
+                BranchId = newUser.BranchId,
+                IsActive = true
+            };
+            DbContext.Employees.Add(employee);
+            await DbContext.SaveChangesAsync();
+
+            var appUser = new ApplicationUser
+            {
+                UserName = newUser.Email,
+                Email = newUser.Email,
+                EmailConfirmed = true,
+                EmployeeId = employee.Id
+            };
+
+            var createResult = await UserManager.CreateAsync(appUser, newUser.Password);
+            if (!createResult.Succeeded)
+            {
+                DbContext.Employees.Remove(employee);
+                await DbContext.SaveChangesAsync();
+                createStatusMessage = "Failed: " + string.Join(", ", createResult.Errors.Select(e => e.Description));
+                createIsSuccess = false;
+                return;
+            }
+
+            // Sync to Firebase so other devices can pull it
+            _ = Task.Run(async () =>
+            {
+                try { await ((ELGlamPOS.Services.FirebaseSyncService)FirebaseSync)
+                    .PushAccountWithPasswordAsync(newUser.Email, employee.Id, newUser.Password); }
+                catch { /* best-effort — local creation already succeeded */ }
+            });
+
+            createStatusMessage = $"✓ Account created for {newUser.FullName}. Other devices can sync this account from Firebase.";
+            createIsSuccess = true;
+            newUser = new NewReceptionistModel();
+            await LoadReceptionistAccounts();
+        }
+        catch (Exception ex)
+        {
+            createStatusMessage = "Error: " + ex.Message;
+            createIsSuccess = false;
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private void ConfirmResetPassword(ReceptionistAccountInfo acct)
+    {
+        pendingResetAccount = acct;
+        resetPassword = "";
+        resetStatusMessage = "";
+        resetIsSuccess = false;
+        showResetModal = true;
+    }
+
+    private async Task ExecuteResetPassword()
+    {
+        if (pendingResetAccount == null) return;
+        if (string.IsNullOrWhiteSpace(resetPassword) || resetPassword.Length < 6)
+        { resetStatusMessage = "Password must be at least 6 characters."; resetIsSuccess = false; return; }
+
+        isResetting = true;
+        StateHasChanged();
+
+        try
+        {
+            var user = await UserManager.FindByIdAsync(pendingResetAccount.UserId);
+            if (user == null) { resetStatusMessage = "User not found."; resetIsSuccess = false; return; }
+
+            var removeResult = await UserManager.RemovePasswordAsync(user);
+            if (!removeResult.Succeeded) { resetStatusMessage = "Failed to remove old password."; resetIsSuccess = false; return; }
+
+            var addResult = await UserManager.AddPasswordAsync(user, resetPassword);
+            if (!addResult.Succeeded) { resetStatusMessage = "Failed to set password."; resetIsSuccess = false; return; }
+
+            // Sync new password to Firebase
+            _ = Task.Run(async () =>
+            {
+                try { await ((ELGlamPOS.Services.FirebaseSyncService)FirebaseSync)
+                    .PushAccountWithPasswordAsync(pendingResetAccount.Email, pendingResetAccount.EmployeeId, resetPassword); }
+                catch { /* best-effort */ }
+            });
+
+            resetStatusMessage = "Password reset and synced to Firebase.";
+            resetIsSuccess = true;
+            resetPassword = "";
+        }
+        catch (Exception ex)
+        {
+            resetStatusMessage = "Error: " + ex.Message;
+            resetIsSuccess = false;
+        }
+        finally
+        {
+            isResetting = false;
+        }
+    }
+
     private class SettingsModel
     {
         public string Email { get; set; } = "";
         public string NewPassword { get; set; } = "";
         public string ConfirmPassword { get; set; } = "";
+    }
+
+    private class NewReceptionistModel
+    {
+        public string FullName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public int BranchId { get; set; } = 0;
+    }
+
+    private class ReceptionistAccountInfo
+    {
+        public string UserId { get; set; } = "";
+        public int EmployeeId { get; set; }
+        public string EmployeeName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string BranchName { get; set; } = "";
     }
 }

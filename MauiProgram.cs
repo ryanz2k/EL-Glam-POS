@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using ELGlamPOS.Data;
 using ELGlamPOS.Services;
+using Microsoft.Extensions.Configuration;
 
 using Microsoft.Maui.LifecycleEvents;
 #if WINDOWS
@@ -34,10 +35,7 @@ public static class MauiProgram
 
 						appWindow.Closing += (s, e) =>
 						{
-							// Cancel the immediate close
 							e.Cancel = true;
-
-							// Dispatch to main thread to show alert
 							Application.Current?.Dispatcher.Dispatch(async () =>
 							{
 								if (Application.Current?.MainPage != null)
@@ -65,18 +63,36 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		string dbPath = Path.Combine(FileSystem.AppDataDirectory, "pos_v2.db");
+		// ── Load appsettings.json ──────────────────────────────────────────────────
+		var configPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+		if (File.Exists(configPath))
+		{
+			builder.Configuration.AddJsonFile(configPath, optional: true, reloadOnChange: false);
+		}
+
+		// ── Firebase Config ────────────────────────────────────────────────────────
+		var firebaseConfig = new FirebaseConfigOptions();
+		builder.Configuration.GetSection(FirebaseConfigOptions.SectionName).Bind(firebaseConfig);
+		builder.Services.AddSingleton(firebaseConfig);
+
+		// ── SQLite (local, offline-capable) ───────────────────────────────────────
+		string dbPath = Path.Combine(FileSystem.AppDataDirectory, "pos_v3.db");
+		builder.Services.AddDbContextFactory<PosDbContext>(options =>
+			options.UseSqlite($"Filename={dbPath}"));
 		builder.Services.AddDbContext<PosDbContext>(options =>
 			options.UseSqlite($"Filename={dbPath}"));
 
+		// ── Receipt Printers ──────────────────────────────────────────────────────
 #if WINDOWS
 		builder.Services.AddSingleton<IReceiptPrinterService, BluetoothReceiptPrinterService>();
 #else
-		builder.Services.AddSingleton<IReceiptPrinterService, MockReceiptPrinterService>(); // Alternatively Android implementation later
+		builder.Services.AddSingleton<IReceiptPrinterService, MockReceiptPrinterService>();
 #endif
 		builder.Services.AddSingleton<ICommissionCalculatorService, CommissionCalculatorService>();
 
-		builder.Services.AddIdentityCore<Models.ApplicationUser>(options => {
+		// ── Identity ──────────────────────────────────────────────────────────────
+		builder.Services.AddIdentityCore<Models.ApplicationUser>(options =>
+		{
 			options.Password.RequireDigit = false;
 			options.Password.RequireLowercase = false;
 			options.Password.RequireNonAlphanumeric = false;
@@ -85,73 +101,59 @@ public static class MauiProgram
 		})
 		.AddEntityFrameworkStores<PosDbContext>();
 
+		// ── App State & Auth ──────────────────────────────────────────────────────
 		builder.Services.AddScoped<PosSessionState>();
 		builder.Services.AddScoped<CartStateService>();
-		builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, LocalAuthenticationStateProvider>();
+		builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider,
+			LocalAuthenticationStateProvider>();
 		builder.Services.AddAuthorizationCore();
+
+		// ── Firebase Sync Service ─────────────────────────────────────────────────
+		builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
+		builder.Services.AddSingleton<FirebaseConfigOptions>(sp => firebaseConfig);
+		builder.Services.AddSingleton<IFirebaseSyncService, FirebaseSyncService>();
 
 		var app = builder.Build();
 
+		// ── Database Migration (replaces EnsureCreated + manual ALTER TABLE hacks) ─
 		using (var scope = app.Services.CreateScope())
 		{
 			var context = scope.ServiceProvider.GetRequiredService<PosDbContext>();
-			context.Database.EnsureCreated();
-
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE DraftOrders ADD COLUMN DiscountAmount TEXT NOT NULL DEFAULT '0';"); } catch { }
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE DraftOrders ADD COLUMN DiscountDescription TEXT NULL;"); } catch { }
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE DraftOrders ADD COLUMN PaymentMethod TEXT NULL;"); } 
-            catch (Exception ex) { System.IO.File.WriteAllText(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "sqlite_error.txt"), ex.ToString()); }
-
-            // Added TransactionId previously
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE DraftOrders ADD COLUMN TransactionId INTEGER NULL;"); } catch { }
-
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE Transactions ADD COLUMN CashAmount TEXT NOT NULL DEFAULT '0';"); } catch { }
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE Transactions ADD COLUMN GCashAmount TEXT NOT NULL DEFAULT '0';"); } catch { }
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE Transactions ADD COLUMN MayaAmount TEXT NOT NULL DEFAULT '0';"); } catch { }
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE Transactions ADD COLUMN BankTransferAmount TEXT NOT NULL DEFAULT '0';"); } catch { }
-
-            // Add OpeningCashOnHand to DailyReports
-            try { context.Database.ExecuteSqlRaw("ALTER TABLE DailyReports ADD COLUMN OpeningCashOnHand TEXT NOT NULL DEFAULT '0';"); } catch { }
-
-            // Clean up existing order data to reset IDs as requested by user
-            try 
-            { 
-                context.Database.ExecuteSqlRaw("DELETE FROM TransactionItems;"); 
-                context.Database.ExecuteSqlRaw("DELETE FROM Transactions;"); 
-                context.Database.ExecuteSqlRaw("DELETE FROM DraftOrderItems;"); 
-                context.Database.ExecuteSqlRaw("DELETE FROM DraftOrders;"); 
-                context.Database.ExecuteSqlRaw("DELETE FROM DailyReports;"); 
-                // Reset identity columns
-                context.Database.ExecuteSqlRaw("DELETE FROM sqlite_sequence WHERE name IN ('Transactions', 'TransactionItems', 'DraftOrders', 'DraftOrderItems', 'DailyReports');");
-            } catch { }
-
-            try
-            {
-                // Attempt to create DailyReports table gracefully
-                context.Database.ExecuteSqlRaw(@"
-                    CREATE TABLE IF NOT EXISTS ""DailyReports"" (
-                        ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_DailyReports"" PRIMARY KEY AUTOINCREMENT,
-                        ""StartDate"" TEXT NOT NULL,
-                        ""EndDate"" TEXT NOT NULL,
-                        ""BranchId"" INTEGER NOT NULL,
-                        ""CashAdvance"" TEXT NOT NULL,
-                        ""Expenses"" TEXT NOT NULL,
-                        ""PullOut"" TEXT NOT NULL,
-                        ""Denom1000"" INTEGER NOT NULL,
-                        ""Denom500"" INTEGER NOT NULL,
-                        ""Denom200"" INTEGER NOT NULL,
-                        ""Denom100"" INTEGER NOT NULL,
-                        ""Denom50"" INTEGER NOT NULL,
-                        ""Denom20"" INTEGER NOT NULL,
-                        ""Denom10"" INTEGER NOT NULL,
-                        ""Denom5"" INTEGER NOT NULL,
-                        ""Denom1"" INTEGER NOT NULL,
-                        CONSTRAINT ""FK_DailyReports_Branches_BranchId"" FOREIGN KEY (""BranchId"") REFERENCES ""Branches"" (""Id"") ON DELETE CASCADE
-                    );
-                ");
-            }
-            catch { /* Table likely exists already */ }
+			var logger = scope.ServiceProvider.GetService<ILogger<App>>();
+			try
+			{
+				context.Database.Migrate();
+				
+				// Data migration for Service Area
+				var salonCategories = new[] { "Hair Care", "Nail Care" };
+				var clinicCategories = new[] { "Facial Care", "Warts Removal", "Eyelash Care", "Gluta Push and Drip", "Eyebrows Care", "hair and make up", "Body Care", "Facial & Body Slimming", "Message", "Waxing/Threading", "Permanent Hair Removal" };
+				
+				var servicesToUpdate = context.ServiceItems.Include(s => s.Category).ToList();
+				bool needsSave = false;
+				foreach(var s in servicesToUpdate)
+				{
+				    if (s.Category != null) {
+                        if (salonCategories.Contains(s.Category.Name)) { s.Area = ELGlamPOS.Models.ServiceArea.Salon; needsSave = true; }
+                        else if (clinicCategories.Contains(s.Category.Name)) { s.Area = ELGlamPOS.Models.ServiceArea.Clinic; needsSave = true; }
+				    }
+				}
+				if (needsSave) {
+				    context.SaveChanges();
+				    // Push updated master data immediately to Firebase
+				    var masterDataSync = scope.ServiceProvider.GetRequiredService<IFirebaseSyncService>();
+				    Task.Run(async () => await masterDataSync.PushMasterDataAsync());
+				}
+			}
+			catch (Exception ex)
+			{
+				// Log but don't crash — allows app to run even with partial migration issues
+				logger?.LogError(ex, "Database migration failed");
+			}
 		}
+
+		// ── Start Firebase Sync Monitoring ────────────────────────────────────────
+		var syncService = app.Services.GetRequiredService<IFirebaseSyncService>();
+		syncService.StartMonitoring();
 
 		return app;
 	}

@@ -1,6 +1,6 @@
 namespace ELGlamPOS.Models
 {
-    public class DailyReport
+    public class DailyReport : SyncableEntity
     {
         public int Id { get; set; }
         public DateTime StartDate { get; set; }
@@ -8,12 +8,15 @@ namespace ELGlamPOS.Models
         public int BranchId { get; set; }
         public Branch Branch { get; set; } = null!;
 
+        /// <summary>UTC time the receptionist submitted the EOD report. Null until submitted.</summary>
+        public DateTime? SubmittedAt { get; set; }
+
         // Manual Inputs for End of Day
         public decimal CashAdvance { get; set; }
         public decimal Expenses { get; set; }
         public decimal PullOut { get; set; }
         public decimal OpeningCashOnHand { get; set; }
-        
+
         // Denominations
         public int Denom1000 { get; set; }
         public int Denom500 { get; set; }
