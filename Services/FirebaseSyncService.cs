@@ -458,10 +458,14 @@ namespace ELGlamPOS.Services
         // ─── POS Account Sync ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// Encodes an email to a safe Firebase key (replaces . with , and @ with _at_).
+        /// Encodes an email to a safe Firebase key using Base64 so it appears randomized 
+        /// and guarantees no invalid characters like '.', '#', '$', '[', ']'.
         /// </summary>
-        private static string EmailToKey(string email) =>
-            email.Replace(".", ",").Replace("@", "_at_");
+        private static string EmailToKey(string email)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(email.ToLowerInvariant());
+            return Convert.ToBase64String(bytes).Replace("/", "_").Replace("+", "-").Replace("=", "");
+        }
 
         /// <summary>
         /// Pushes this account's metadata to Firebase /pos_accounts so other devices can pull it.
@@ -529,6 +533,12 @@ namespace ELGlamPOS.Services
                 if (employee == null) return;
 
                 var key = EmailToKey(email);
+                
+                // Base64 encode the password so it's not plainly visible in Firebase Console.
+                // (We cannot use a one-way hash here because other devices need the plaintext
+                // to feed into their own local ASP.NET Core Identity hashers).
+                var encodedPassword = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(passwordToken));
+
                 var account = new FirebasePosAccount
                 {
                     Email = email,
@@ -536,16 +546,36 @@ namespace ELGlamPOS.Services
                     EmployeeId = employeeId,
                     BranchId = employee.BranchId,
                     Role = employee.Role.ToString(),
-                    PasswordToken = passwordToken,
+                    PasswordToken = encodedPassword,
                     UpdatedAt = DateTime.UtcNow.ToString("o")
                 };
 
                 await client.Child("pos_accounts").Child(key).PutAsync(account);
-                _logger.LogInformation("[Sync] Pushed account {Email} with password token to Firebase", email);
+                _logger.LogInformation("[Sync] Pushed account {Email} with encoded password to Firebase", email);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[Sync] Failed to push account with password {Email}", email);
+            }
+        }
+
+        /// <summary>
+        /// Deletes an account from Firebase /pos_accounts.
+        /// </summary>
+        public async Task DeleteAccountAsync(string email, CancellationToken ct = default)
+        {
+            var client = await GetClientAsync();
+            if (client == null) return;
+
+            try
+            {
+                var key = EmailToKey(email);
+                await client.Child("pos_accounts").Child(key).DeleteAsync();
+                _logger.LogInformation("[Sync] Deleted account {Email} from Firebase", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[Sync] Failed to delete account {Email}", email);
             }
         }
 
@@ -563,10 +593,20 @@ namespace ELGlamPOS.Services
                 var records = await client.Child("pos_accounts").OnceAsync<FirebasePosAccount>();
                 var result = records
                     .Where(r => r.Object != null)
-                    .Select(r =>
+                    .Select(r => 
                     {
-                        r.Object.Email = r.Key.Replace(",", ".").Replace("_at_", "@");
-                        return r.Object;
+                        var acct = r.Object;
+                        // Decode the base64 password token so the local Identity system can hash it
+                        if (!string.IsNullOrEmpty(acct.PasswordToken))
+                        {
+                            try
+                            {
+                                var bytes = Convert.FromBase64String(acct.PasswordToken);
+                                acct.PasswordToken = System.Text.Encoding.UTF8.GetString(bytes);
+                            }
+                            catch { /* fallback if it was saved in plaintext previously */ }
+                        }
+                        return acct;
                     })
                     .ToList();
 

@@ -48,6 +48,12 @@ namespace ELGlamPOS.Services
         /// <summary>Push a POS account record (email + hashed password metadata) to Firebase /pos_accounts.</summary>
         Task PushAccountAsync(string email, int employeeId, CancellationToken ct = default);
 
+        /// <summary>Push account to Firebase with a specific password token.</summary>
+        Task PushAccountWithPasswordAsync(string email, int employeeId, string passwordToken, CancellationToken ct = default);
+
+        /// <summary>Delete a POS account from Firebase /pos_accounts.</summary>
+        Task DeleteAccountAsync(string email, CancellationToken ct = default);
+
         /// <summary>Pull /pos_accounts from Firebase and create missing local Identity users with a reset-token flow.</summary>
         Task<List<FirebasePosAccount>> PullAccountsAsync(CancellationToken ct = default);
     }

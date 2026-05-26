@@ -189,10 +189,16 @@
                                                 <div class="text-xs text-gray-500">@acct.Email</div>
                                                 <div class="text-xs text-el-pink-600 font-medium">@acct.BranchName</div>
                                             </div>
-                                            <button @onclick="() => ConfirmResetPassword(acct)"
-                                                    class="px-3 py-1.5 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-all">
-                                                Reset PW
-                                            </button>
+                                            <div class="flex items-center gap-2">
+                                                <button @onclick="() => ConfirmResetPassword(acct)"
+                                                        class="px-3 py-1.5 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition-all">
+                                                    Reset PW
+                                                </button>
+                                                <button @onclick="() => ConfirmDeleteAccount(acct)"
+                                                        class="px-2 py-1.5 text-xs font-bold bg-white hover:bg-red-50 text-red-500 border border-red-200 hover:border-red-300 rounded-lg transition-all" title="Delete Account">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                </button>
+                                            </div>
                                         </div>
                                     }
                                 </div>
@@ -236,6 +242,40 @@
     </div>
 }
 
+@* Delete Account Modal *@
+@if (showDeleteModal && pendingDeleteAccount != null)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full border border-red-100">
+            <h2 class="text-xl font-bold text-gray-800 mb-1">Delete Account</h2>
+            <p class="text-sm text-gray-500 mb-5">Are you sure you want to delete <strong>@pendingDeleteAccount.EmployeeName</strong>'s account? This removes their login access locally and across synced devices.</p>
+
+            @if (!string.IsNullOrEmpty(deleteStatusMessage))
+            {
+                <div class="mb-4 p-3 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-100">
+                    @deleteStatusMessage
+                </div>
+            }
+
+            <div class="flex gap-3 pt-1">
+                <button @onclick="() => showDeleteModal = false" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all text-sm">Cancel</button>
+                <button @onclick="ExecuteDeleteAccount" disabled="@isDeleting"
+                        class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all shadow-md disabled:opacity-50 text-sm flex justify-center items-center gap-1.5">
+                    @if (isDeleting)
+                    {
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span>Deleting...</span>
+                    }
+                    else
+                    {
+                        <span>Delete</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     // ── My Account ─────────────────────────────────────────────────
     private ApplicationUser? currentUser;
@@ -266,6 +306,12 @@
     private bool isResetting = false;
     private string resetStatusMessage = "";
     private bool resetIsSuccess = false;
+
+    // ── Delete Account Modal ───────────────────────────────────────
+    private bool showDeleteModal = false;
+    private ReceptionistAccountInfo? pendingDeleteAccount;
+    private bool isDeleting = false;
+    private string deleteStatusMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -432,10 +478,14 @@
                 var emp = SessionState.CurrentEmployee;
                 if (emp != null && emp.Role == EmployeeRole.Receptionist)
                 {
+                    var syncEmail = currentUser.Email!;
+                    var syncEmpId = emp.Id;
+                    var syncPass = model.NewPassword;
+                    
                     _ = Task.Run(async () =>
                     {
                         try { await ((ELGlamPOS.Services.FirebaseSyncService)FirebaseSync)
-                            .PushAccountWithPasswordAsync(currentUser.Email!, emp.Id, model.NewPassword); }
+                            .PushAccountWithPasswordAsync(syncEmail, syncEmpId, syncPass); }
                         catch { /* best-effort */ }
                     });
                 }
@@ -508,11 +558,15 @@
                 return;
             }
 
+            var syncEmail = newUser.Email;
+            var syncPassword = newUser.Password;
+            var syncEmpId = employee.Id;
+
             // Sync to Firebase so other devices can pull it
             _ = Task.Run(async () =>
             {
                 try { await ((ELGlamPOS.Services.FirebaseSyncService)FirebaseSync)
-                    .PushAccountWithPasswordAsync(newUser.Email, employee.Id, newUser.Password); }
+                    .PushAccountWithPasswordAsync(syncEmail, syncEmpId, syncPassword); }
                 catch { /* best-effort — local creation already succeeded */ }
             });
 
@@ -561,11 +615,15 @@
             var addResult = await UserManager.AddPasswordAsync(user, resetPassword);
             if (!addResult.Succeeded) { resetStatusMessage = "Failed to set password."; resetIsSuccess = false; return; }
 
+            var syncEmail = pendingResetAccount.Email;
+            var syncEmpId = pendingResetAccount.EmployeeId;
+            var syncPass = resetPassword;
+
             // Sync new password to Firebase
             _ = Task.Run(async () =>
             {
                 try { await ((ELGlamPOS.Services.FirebaseSyncService)FirebaseSync)
-                    .PushAccountWithPasswordAsync(pendingResetAccount.Email, pendingResetAccount.EmployeeId, resetPassword); }
+                    .PushAccountWithPasswordAsync(syncEmail, syncEmpId, syncPass); }
                 catch { /* best-effort */ }
             });
 
@@ -581,6 +639,58 @@
         finally
         {
             isResetting = false;
+        }
+    }
+
+    private void ConfirmDeleteAccount(ReceptionistAccountInfo acct)
+    {
+        pendingDeleteAccount = acct;
+        deleteStatusMessage = "";
+        showDeleteModal = true;
+    }
+
+    private async Task ExecuteDeleteAccount()
+    {
+        if (pendingDeleteAccount == null) return;
+        isDeleting = true;
+        StateHasChanged();
+
+        try
+        {
+            // 1. Delete the Identity user
+            var user = await UserManager.FindByIdAsync(pendingDeleteAccount.UserId);
+            if (user != null)
+            {
+                await UserManager.DeleteAsync(user);
+            }
+
+            // 2. Disable the Employee record so they don't appear in dropdowns
+            var employee = await DbContext.Employees.FindAsync(pendingDeleteAccount.EmployeeId);
+            if (employee != null)
+            {
+                employee.IsActive = false;
+                DbContext.Employees.Update(employee);
+                await DbContext.SaveChangesAsync();
+            }
+
+            // 3. Delete from Firebase to sync across devices
+            var syncEmail = pendingDeleteAccount.Email;
+            _ = Task.Run(async () =>
+            {
+                try { await ((ELGlamPOS.Services.FirebaseSyncService)FirebaseSync).DeleteAccountAsync(syncEmail); }
+                catch { /* best effort */ }
+            });
+
+            showDeleteModal = false;
+            await LoadReceptionistAccounts();
+        }
+        catch (Exception ex)
+        {
+            deleteStatusMessage = "Error: " + ex.Message;
+        }
+        finally
+        {
+            isDeleting = false;
         }
     }
 
