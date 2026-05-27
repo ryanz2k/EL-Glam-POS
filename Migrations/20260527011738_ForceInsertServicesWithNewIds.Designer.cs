@@ -3,6 +3,7 @@ using System;
 using ELGlamPOS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ELGlamPOS.Migrations
 {
     [DbContext(typeof(PosDbContext))]
-    partial class PosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260527011738_ForceInsertServicesWithNewIds")]
+    partial class ForceInsertServicesWithNewIds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -90,16 +93,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "1e0eb535-21c2-4740-94c7-2c905550f29e",
+                            ConcurrencyStamp = "cb9d7385-8b7d-482f-a37d-90a8dc926330",
                             Email = "jesa@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 1,
                             LockoutEnabled = false,
                             NormalizedEmail = "JESA@SALON.COM",
                             NormalizedUserName = "JESA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBn6sQWQqMnJP2e9ToNlMImCDddMNMk0guDDrocqYkiP6V1J/YbNcXVpIE20ejxi3w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEF0TUVM+kbiWF+6sHoh45WLyYP3WwCIUI4NvOv2+2AdUk2ViOrwDYcswpretoz5TOg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "0bef63b8-bb77-4ed3-b6d3-93211982747a",
+                            SecurityStamp = "5a6e2fce-0429-4b74-bca5-1493d82d0b0d",
                             TwoFactorEnabled = false,
                             UserName = "jesa@salon.com"
                         },
@@ -107,16 +110,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "817c33e4-450f-4932-a03b-7ea8b9aa1b86",
+                            ConcurrencyStamp = "b5172cd8-a445-4894-917c-d81e69bbeff7",
                             Email = "marilyn@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 7,
                             LockoutEnabled = false,
                             NormalizedEmail = "MARILYN@SALON.COM",
                             NormalizedUserName = "MARILYN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAN9gVJwy/5nY9aZ7C3EzZ+zcXthbkIH4JNMXAtu8mX5k5SMCbnewQ28PMWrOFkLjQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEC76Q5DwIh2BjQyU/zXVQDZi8ndgw02xlSIhMZZVUnrOGvQPIN/QEzYjEr/OBWeCVQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e94744b1-b691-4aa4-aba0-a545cc45c8d9",
+                            SecurityStamp = "28a3828a-43fb-455b-bc3f-72cb9962584c",
                             TwoFactorEnabled = false,
                             UserName = "marilyn@salon.com"
                         },
@@ -124,16 +127,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "3",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "b74f662e-85a2-4af8-accb-c41a93c8b0ec",
+                            ConcurrencyStamp = "5e90714c-cfb3-4997-92b9-ba4032255910",
                             Email = "rowena@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 13,
                             LockoutEnabled = false,
                             NormalizedEmail = "ROWENA@SALON.COM",
                             NormalizedUserName = "ROWENA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJ9AE6HwYDnBvT1rsGfIahjKzo5eAJrzw0mbQ7+XVgOrPsCc09mlN5FfsusxZ2/utw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEN8UdgFqyTy1PsRdsFRSTBoYdkNDX5U6R/tauK+Z1gaMuY0oJptEEf1C4g1+vHwJ0w==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ae66d99d-6a8e-4563-bbc4-801fdb8de9eb",
+                            SecurityStamp = "1baf45ae-c450-4305-87fa-6994bfc3d1e7",
                             TwoFactorEnabled = false,
                             UserName = "rowena@salon.com"
                         },
@@ -141,16 +144,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "3b2a62c4-bfb9-4409-a804-1c1c9e1ed207",
+                            ConcurrencyStamp = "568976af-3c82-4d11-9d96-a3b53f076a24",
                             Email = "jennifer@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 16,
                             LockoutEnabled = false,
                             NormalizedEmail = "JENNIFER@SALON.COM",
                             NormalizedUserName = "JENNIFER@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHM5v1Xb2k7IxiL/Q5/G9O7kzuXGBA1neKXpo3f8fL/JjGaWkd2/yUaMZ02bKnEg3w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELyloAbHiLdntKap+/PvoO+iWG5PPS+opj2MWo5j5SS+EEaftl+0ShLMsncReMFRgQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "d2e9b71d-1155-4938-a7fb-14a571dd9dd5",
+                            SecurityStamp = "f3793c94-dbf9-464a-b84e-b2235b0633bc",
                             TwoFactorEnabled = false,
                             UserName = "jennifer@salon.com"
                         },
@@ -158,16 +161,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "f0e6c651-fd5d-41a8-8cd7-4ce32557fcf1",
+                            ConcurrencyStamp = "0e0ce7fc-850b-41be-b84d-9ef38450e277",
                             Email = "admin@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 21,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@SALON.COM",
                             NormalizedUserName = "ADMIN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEL35max0AQlH5SAgQ7ybyVJ4peSxHvnMHspgu3d6zaDPSulVAmK2U93Sye9L9o4g+w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEOGaBM5MEZl4xIm2AgwH+1YEQ8uRIy6TKzoTxM9Uj4slL5dxaUFcUZaSXxJbT26Dkg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "436b4617-a832-447d-a3b1-a94023a54a08",
+                            SecurityStamp = "f490393a-5e5f-45e4-b1a9-3fad30406849",
                             TwoFactorEnabled = false,
                             UserName = "admin@salon.com"
                         });
@@ -965,13 +968,12 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 54,
-                            Area = "Clinic",
                             Name = "Semi-Permanent Make Up"
                         },
                         new
                         {
                             Id = 55,
-                            Area = "Salon",
+                            Area = "Clinic",
                             Name = "Others (Hair & Make Up)"
                         },
                         new
@@ -2185,7 +2187,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Others - Additional Nail Art",
+                            Name = "Others - Additional Nail Art (starting price)",
                             Type = 0
                         },
                         new
@@ -2197,7 +2199,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Others - Stones",
+                            Name = "Others - Stones (starting price)",
                             Type = 0
                         },
                         new
@@ -2317,7 +2319,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Loreal Hair Spa",
+                            Name = "Special Treatment - Loreal Hair Spa (starting price)",
                             Type = 0
                         },
                         new
@@ -2329,7 +2331,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Plarmia Scalp Treatment",
+                            Name = "Special Treatment - Plarmia Scalp Treatment (starting price)",
                             Type = 0
                         },
                         new
@@ -2341,7 +2343,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Grand Linkage Damage Repair",
+                            Name = "Special Treatment - Grand Linkage Damage Repair (starting price)",
                             Type = 0
                         },
                         new
@@ -2353,7 +2355,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Hair Cellophane",
+                            Name = "Special Treatment - Hair Cellophane (starting price)",
                             Type = 0
                         },
                         new
@@ -2365,7 +2367,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Protein Straight Bond",
+                            Name = "Special Treatment - Protein Straight Bond (starting price)",
                             Type = 0
                         },
                         new
@@ -2377,7 +2379,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Hair Color - Hair Color & Treatment",
+                            Name = "Hair Color - Hair Color & Treatment (starting price)",
                             Type = 0
                         },
                         new
@@ -2389,7 +2391,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Hair Color - Hair Color, Highlights & Treatment",
+                            Name = "Hair Color - Hair Color, Highlights & Treatment (starting price)",
                             Type = 0
                         },
                         new
@@ -2401,7 +2403,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Hair Color - Hair Balayage",
+                            Name = "Hair Color - Hair Balayage (starting price)",
                             Type = 0
                         },
                         new
@@ -2413,7 +2415,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Rebonding - Regular Hair Rebond",
+                            Name = "Rebonding - Regular Hair Rebond (starting price)",
                             Type = 0
                         },
                         new
@@ -2425,7 +2427,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Rebonding - Premium Hair Rebond",
+                            Name = "Rebonding - Premium Hair Rebond (starting price)",
                             Type = 0
                         },
                         new
@@ -2437,7 +2439,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Brazilian Treatment - Brazilian Treatment",
+                            Name = "Brazilian Treatment - Brazilian Treatment (starting price)",
                             Type = 0
                         },
                         new
@@ -2449,7 +2451,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Rebond",
+                            Name = "Beauty Combo - Hair Color, Rebond (starting price)",
                             Type = 0
                         },
                         new
@@ -2461,7 +2463,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Brazilian",
+                            Name = "Beauty Combo - Hair Color, Brazilian (starting price)",
                             Type = 0
                         },
                         new
@@ -2473,7 +2475,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Rebond, Brazilian Treatment",
+                            Name = "Beauty Combo - Hair Color, Rebond, Brazilian Treatment (starting price)",
                             Type = 0
                         },
                         new
@@ -2485,7 +2487,7 @@ namespace ELGlamPOS.Migrations
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Highlights, Rebond, Brazilian Treatment",
+                            Name = "Beauty Combo - Hair Color, Highlights, Rebond, Brazilian Treatment (starting price)",
                             Type = 0
                         });
                 });

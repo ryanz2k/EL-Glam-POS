@@ -54,3 +54,7 @@ appsettings.json
 appsettings.Development.json
 *.local.json
 sqlite_error.txt
+
+## Ignore assets folder
+assets/
+

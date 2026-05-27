@@ -28,6 +28,22 @@
         </div>
     }
 
+    <!-- Search Bar -->
+    <div class="mb-4 shrink-0 flex gap-2">
+        <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </span>
+            <input type="text" @bind-value="searchTerm" @bind-value:event="oninput" placeholder="Search by service name, category, or description..." class="w-full pl-10 pr-4 py-2.5 bg-white/80 border border-gray-200/80 rounded-xl focus:ring-2 focus:ring-el-pink-400 focus:border-el-pink-400 outline-none transition-all text-sm shadow-sm" />
+        </div>
+        @if (!string.IsNullOrEmpty(searchTerm))
+        {
+            <button @onclick='() => searchTerm = ""' class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-xl text-sm font-semibold transition-all">Clear</button>
+        }
+    </div>
+
     <!-- Services Grid -->
     <div class="flex-1 overflow-auto glass-card rounded-2xl border border-white/40">
         <table class="w-full text-left border-collapse">
@@ -237,6 +253,7 @@
     private List<ELGlamPOS.Models.ServiceItem> services = new();
     private List<ELGlamPOS.Models.ServiceCategory> categories = new();
     private string errorMessage = "";
+    private string searchTerm = "";
     
     private string sortColumn = "Name";
     private bool sortAscending = true;
@@ -285,13 +302,23 @@
     {
         get
         {
+            var query = services.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim();
+                query = query.Where(s => 
+                    (s.Name != null && s.Name.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (s.Description != null && s.Description.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                    (s.Category != null && s.Category.Name != null && s.Category.Name.Contains(term, StringComparison.OrdinalIgnoreCase))
+                );
+            }
             if (sortColumn == "Name")
-                return sortAscending ? services.OrderBy(s => s.Name) : services.OrderByDescending(s => s.Name);
+                return sortAscending ? query.OrderBy(s => s.Name) : query.OrderByDescending(s => s.Name);
             else if (sortColumn == "Category")
-                return sortAscending ? services.OrderBy(s => s.Category?.Name) : services.OrderByDescending(s => s.Category?.Name);
+                return sortAscending ? query.OrderBy(s => s.Category?.Name) : query.OrderByDescending(s => s.Category?.Name);
             else if (sortColumn == "Price")
-                return sortAscending ? services.OrderBy(s => s.BasePrice) : services.OrderByDescending(s => s.BasePrice);
-            return services;
+                return sortAscending ? query.OrderBy(s => s.BasePrice) : query.OrderByDescending(s => s.BasePrice);
+            return query;
         }
     }
 

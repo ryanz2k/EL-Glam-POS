@@ -3,6 +3,7 @@ using System;
 using ELGlamPOS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ELGlamPOS.Migrations
 {
     [DbContext(typeof(PosDbContext))]
-    partial class PosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260527005710_UpdateServicesArea")]
+    partial class UpdateServicesArea
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -90,16 +93,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "1e0eb535-21c2-4740-94c7-2c905550f29e",
+                            ConcurrencyStamp = "6fa7093c-9d07-43a2-b3db-47f0daa688a7",
                             Email = "jesa@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 1,
                             LockoutEnabled = false,
                             NormalizedEmail = "JESA@SALON.COM",
                             NormalizedUserName = "JESA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBn6sQWQqMnJP2e9ToNlMImCDddMNMk0guDDrocqYkiP6V1J/YbNcXVpIE20ejxi3w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPmxPWtSXkJresMQ+u/H4vzfuCu29ec7wgaLotPaESdAE4m72tlomL5Kto53NBjXxA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "0bef63b8-bb77-4ed3-b6d3-93211982747a",
+                            SecurityStamp = "be2e8c89-ed19-4038-92de-cacafb3b92fd",
                             TwoFactorEnabled = false,
                             UserName = "jesa@salon.com"
                         },
@@ -107,16 +110,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "817c33e4-450f-4932-a03b-7ea8b9aa1b86",
+                            ConcurrencyStamp = "98ebecd4-31ec-4b66-bfaa-654ef5681ab3",
                             Email = "marilyn@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 7,
                             LockoutEnabled = false,
                             NormalizedEmail = "MARILYN@SALON.COM",
                             NormalizedUserName = "MARILYN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAN9gVJwy/5nY9aZ7C3EzZ+zcXthbkIH4JNMXAtu8mX5k5SMCbnewQ28PMWrOFkLjQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFA4WwkFnAubaJnsMNTQDmkDQF0Wlbp7kjU7MWAx4IeEOl0WKfAt4xQVgC9MFevbiA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e94744b1-b691-4aa4-aba0-a545cc45c8d9",
+                            SecurityStamp = "733ad1cd-37e9-4981-801f-05ede1c8939c",
                             TwoFactorEnabled = false,
                             UserName = "marilyn@salon.com"
                         },
@@ -124,16 +127,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "3",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "b74f662e-85a2-4af8-accb-c41a93c8b0ec",
+                            ConcurrencyStamp = "53c336b2-b446-474c-94db-3508dbfb0e85",
                             Email = "rowena@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 13,
                             LockoutEnabled = false,
                             NormalizedEmail = "ROWENA@SALON.COM",
                             NormalizedUserName = "ROWENA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJ9AE6HwYDnBvT1rsGfIahjKzo5eAJrzw0mbQ7+XVgOrPsCc09mlN5FfsusxZ2/utw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELwQI5rU3O8jDx65LY9+eIWh52UMWfzgGaGKe6L11lc7nQtTkJEKtRpbOw+/QJFvWQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ae66d99d-6a8e-4563-bbc4-801fdb8de9eb",
+                            SecurityStamp = "7c3a2840-ba1a-4218-bb02-909f562e441e",
                             TwoFactorEnabled = false,
                             UserName = "rowena@salon.com"
                         },
@@ -141,16 +144,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "3b2a62c4-bfb9-4409-a804-1c1c9e1ed207",
+                            ConcurrencyStamp = "8dc26db3-d938-4482-9495-2695f31ce287",
                             Email = "jennifer@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 16,
                             LockoutEnabled = false,
                             NormalizedEmail = "JENNIFER@SALON.COM",
                             NormalizedUserName = "JENNIFER@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHM5v1Xb2k7IxiL/Q5/G9O7kzuXGBA1neKXpo3f8fL/JjGaWkd2/yUaMZ02bKnEg3w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEOuT8KbUJpNNiovNugsx21bvfXvAYBWCs9uULvEQsynyTmKDZ+ZY1YLYEgCD2jXhg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "d2e9b71d-1155-4938-a7fb-14a571dd9dd5",
+                            SecurityStamp = "9cf79c3d-f8bd-4c34-8dd8-4b00afc85b74",
                             TwoFactorEnabled = false,
                             UserName = "jennifer@salon.com"
                         },
@@ -158,16 +161,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "f0e6c651-fd5d-41a8-8cd7-4ce32557fcf1",
+                            ConcurrencyStamp = "45abf423-2916-4f77-911c-279265917b41",
                             Email = "admin@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 21,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@SALON.COM",
                             NormalizedUserName = "ADMIN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEL35max0AQlH5SAgQ7ybyVJ4peSxHvnMHspgu3d6zaDPSulVAmK2U93Sye9L9o4g+w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHZcE0aYQFh3K3AKQMNSYGix1ybyIZJhMNq1yi8WTlmBXl18zh9AtY3QbWndjv7MtQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "436b4617-a832-447d-a3b1-a94023a54a08",
+                            SecurityStamp = "f885f228-9441-4200-9e0b-2eeb250b6e0b",
                             TwoFactorEnabled = false,
                             UserName = "admin@salon.com"
                         });
@@ -940,79 +943,84 @@ namespace ELGlamPOS.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 50,
+                            Id = 1,
                             Area = "Clinic",
                             Name = "Facial Care"
                         },
                         new
                         {
-                            Id = 51,
+                            Id = 2,
                             Area = "Clinic",
                             Name = "Warts Removal"
                         },
                         new
                         {
-                            Id = 52,
+                            Id = 3,
                             Area = "Clinic",
-                            Name = "Gluta Push & Drip"
+                            Name = "Gluta Push and Drip"
                         },
                         new
                         {
-                            Id = 53,
+                            Id = 4,
                             Area = "Clinic",
-                            Name = "Eyelash & Brows Care"
+                            Name = "Eyelash Care"
                         },
                         new
                         {
-                            Id = 54,
+                            Id = 5,
                             Area = "Clinic",
+                            Name = "Eyebrows Care"
+                        },
+                        new
+                        {
+                            Id = 6,
                             Name = "Semi-Permanent Make Up"
                         },
                         new
                         {
-                            Id = 55,
-                            Area = "Salon",
-                            Name = "Others (Hair & Make Up)"
-                        },
-                        new
-                        {
-                            Id = 56,
+                            Id = 7,
                             Area = "Clinic",
-                            Name = "Hair Removal"
+                            Name = "hair and make up"
                         },
                         new
                         {
-                            Id = 57,
+                            Id = 8,
                             Area = "Clinic",
-                            Name = "IPL/Diode Laser Treatment"
+                            Name = "Waxing/Threading"
                         },
                         new
                         {
-                            Id = 58,
+                            Id = 9,
+                            Area = "Clinic",
+                            Name = "Permanent Hair Removal"
+                        },
+                        new
+                        {
+                            Id = 10,
                             Area = "Clinic",
                             Name = "Body Care"
                         },
                         new
                         {
-                            Id = 59,
+                            Id = 11,
                             Area = "Clinic",
                             Name = "Facial & Body Slimming"
                         },
                         new
                         {
-                            Id = 60,
+                            Id = 12,
                             Area = "Clinic",
-                            Name = "Massage"
+                            Name = "Message"
                         },
                         new
                         {
-                            Id = 61,
+                            Id = 13,
                             Area = "Salon",
                             Name = "Nail Care"
                         },
                         new
                         {
-                            Id = 62,
+                            Id = 14,
                             Area = "Salon",
                             Name = "Hair Care"
                         });
@@ -1062,10 +1070,10 @@ namespace ELGlamPOS.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 200,
+                            Id = 1,
                             Area = 0,
                             BasePrice = 399.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1074,10 +1082,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 201,
+                            Id = 2,
                             Area = 0,
                             BasePrice = 549.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1086,10 +1094,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 202,
+                            Id = 3,
                             Area = 0,
                             BasePrice = 699.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1098,10 +1106,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 203,
+                            Id = 4,
                             Area = 0,
                             BasePrice = 799.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1110,10 +1118,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 204,
+                            Id = 5,
                             Area = 0,
                             BasePrice = 799.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1122,10 +1130,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 205,
+                            Id = 6,
                             Area = 0,
                             BasePrice = 999.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1134,10 +1142,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 206,
+                            Id = 7,
                             Area = 0,
                             BasePrice = 1299.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1146,10 +1154,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 207,
+                            Id = 8,
                             Area = 0,
                             BasePrice = 1499.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1158,10 +1166,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 208,
+                            Id = 9,
                             Area = 0,
                             BasePrice = 1499.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1170,10 +1178,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 209,
+                            Id = 10,
                             Area = 0,
                             BasePrice = 2499.0m,
-                            CategoryId = 50,
+                            CategoryId = 1,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1182,10 +1190,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 210,
+                            Id = 11,
                             Area = 0,
                             BasePrice = 799.0m,
-                            CategoryId = 51,
+                            CategoryId = 2,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1194,10 +1202,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 211,
+                            Id = 12,
                             Area = 0,
                             BasePrice = 799.0m,
-                            CategoryId = 51,
+                            CategoryId = 2,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1206,10 +1214,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 212,
+                            Id = 13,
                             Area = 0,
                             BasePrice = 1499.0m,
-                            CategoryId = 51,
+                            CategoryId = 2,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1218,10 +1226,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 213,
+                            Id = 14,
                             Area = 0,
                             BasePrice = 299.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1230,10 +1238,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 214,
+                            Id = 15,
                             Area = 0,
                             BasePrice = 399.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1242,10 +1250,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 215,
+                            Id = 16,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1254,10 +1262,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 216,
+                            Id = 17,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1266,10 +1274,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 217,
+                            Id = 18,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1278,10 +1286,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 218,
+                            Id = 19,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1290,10 +1298,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 219,
+                            Id = 20,
                             Area = 0,
                             BasePrice = 999.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1302,10 +1310,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 220,
+                            Id = 21,
                             Area = 0,
                             BasePrice = 1799.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1314,10 +1322,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 221,
+                            Id = 22,
                             Area = 0,
                             BasePrice = 1899.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1326,10 +1334,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 222,
+                            Id = 23,
                             Area = 0,
                             BasePrice = 1899.0m,
-                            CategoryId = 52,
+                            CategoryId = 3,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1338,10 +1346,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 223,
+                            Id = 24,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 53,
+                            CategoryId = 4,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1350,10 +1358,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 224,
+                            Id = 25,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 53,
+                            CategoryId = 4,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1362,10 +1370,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 225,
+                            Id = 26,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 53,
+                            CategoryId = 4,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1374,10 +1382,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 226,
+                            Id = 27,
                             Area = 0,
                             BasePrice = 799.0m,
-                            CategoryId = 53,
+                            CategoryId = 4,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1386,10 +1394,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 227,
+                            Id = 28,
                             Area = 0,
                             BasePrice = 899.0m,
-                            CategoryId = 53,
+                            CategoryId = 4,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1398,10 +1406,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 228,
+                            Id = 29,
                             Area = 0,
                             BasePrice = 300.0m,
-                            CategoryId = 53,
+                            CategoryId = 4,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1410,10 +1418,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 229,
+                            Id = 30,
                             Area = 0,
                             BasePrice = 250.0m,
-                            CategoryId = 53,
+                            CategoryId = 4,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
@@ -1422,10 +1430,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 230,
+                            Id = 31,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 53,
+                            CategoryId = 5,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1434,10 +1442,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 231,
+                            Id = 32,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 53,
+                            CategoryId = 5,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1446,82 +1454,82 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 232,
+                            Id = 33,
                             Area = 0,
                             BasePrice = 2999.0m,
-                            CategoryId = 54,
+                            CategoryId = 6,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Eyebrow Micro-Shading (1 Session)",
+                            Name = "Eyebrow Micro-Shading 1 Session",
                             Type = 0
                         },
                         new
                         {
-                            Id = 233,
+                            Id = 34,
                             Area = 0,
                             BasePrice = 4499.0m,
-                            CategoryId = 54,
+                            CategoryId = 6,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Eyebrow Micro-Shading (2 Sessions)",
+                            Name = "Eyebrow Micro-Shading 2 Session",
                             Type = 0
                         },
                         new
                         {
-                            Id = 234,
+                            Id = 35,
                             Area = 0,
                             BasePrice = 2999.0m,
-                            CategoryId = 54,
+                            CategoryId = 6,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Lips Blush (1 Session)",
+                            Name = "Lips Blush 1 Session",
                             Type = 0
                         },
                         new
                         {
-                            Id = 235,
+                            Id = 36,
                             Area = 0,
                             BasePrice = 4499.0m,
-                            CategoryId = 54,
+                            CategoryId = 6,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Lips Blush (2 Sessions)",
+                            Name = "Lips Blush 2 Session",
                             Type = 0
                         },
                         new
                         {
-                            Id = 236,
+                            Id = 37,
                             Area = 0,
                             BasePrice = 2499.0m,
-                            CategoryId = 54,
+                            CategoryId = 6,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Eyeliner (1 Session)",
+                            Name = "Eyeliner 1 Session",
                             Type = 0
                         },
                         new
                         {
-                            Id = 237,
+                            Id = 38,
                             Area = 0,
                             BasePrice = 3999.0m,
-                            CategoryId = 54,
+                            CategoryId = 6,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Eyeliner (2 Sessions)",
+                            Name = "Eyeliner 2 Session",
                             Type = 0
                         },
                         new
                         {
-                            Id = 238,
+                            Id = 39,
                             Area = 0,
                             BasePrice = 600.0m,
-                            CategoryId = 55,
+                            CategoryId = 7,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1530,10 +1538,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 239,
+                            Id = 40,
                             Area = 0,
                             BasePrice = 600.0m,
-                            CategoryId = 55,
+                            CategoryId = 7,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1542,10 +1550,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 240,
+                            Id = 41,
                             Area = 0,
                             BasePrice = 1000.0m,
-                            CategoryId = 55,
+                            CategoryId = 7,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1554,10 +1562,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 241,
+                            Id = 42,
                             Area = 0,
                             BasePrice = 149.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1566,10 +1574,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 242,
+                            Id = 43,
                             Area = 0,
                             BasePrice = 149.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1578,10 +1586,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 243,
+                            Id = 44,
                             Area = 0,
                             BasePrice = 149.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1590,10 +1598,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 244,
+                            Id = 45,
                             Area = 0,
                             BasePrice = 149.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1602,10 +1610,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 245,
+                            Id = 46,
                             Area = 0,
                             BasePrice = 249.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1614,10 +1622,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 246,
+                            Id = 47,
                             Area = 0,
                             BasePrice = 799.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1626,58 +1634,58 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 247,
+                            Id = 48,
                             Area = 0,
                             BasePrice = 299.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Arms (Women)",
+                            Name = "Arms Women",
                             Type = 0
                         },
                         new
                         {
-                            Id = 248,
+                            Id = 49,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Legs (Women)",
+                            Name = "Legs Women",
                             Type = 0
                         },
                         new
                         {
-                            Id = 249,
+                            Id = 50,
                             Area = 0,
                             BasePrice = 399.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Arms (Men)",
+                            Name = "Arms Men",
                             Type = 0
                         },
                         new
                         {
-                            Id = 250,
+                            Id = 51,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 56,
+                            CategoryId = 8,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Legs (Men)",
+                            Name = "Legs Men",
                             Type = 0
                         },
                         new
                         {
-                            Id = 251,
+                            Id = 52,
                             Area = 0,
                             BasePrice = 699.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1686,10 +1694,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 252,
+                            Id = 53,
                             Area = 0,
                             BasePrice = 699.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1698,10 +1706,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 253,
+                            Id = 54,
                             Area = 0,
                             BasePrice = 1099.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1710,10 +1718,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 254,
+                            Id = 55,
                             Area = 0,
                             BasePrice = 399.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1722,10 +1730,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 255,
+                            Id = 56,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1734,10 +1742,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 256,
+                            Id = 57,
                             Area = 0,
                             BasePrice = 399.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
@@ -1746,10 +1754,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 257,
+                            Id = 58,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
@@ -1758,10 +1766,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 258,
+                            Id = 59,
                             Area = 0,
                             BasePrice = 999.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1770,10 +1778,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 259,
+                            Id = 60,
                             Area = 0,
                             BasePrice = 899.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1782,10 +1790,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 260,
+                            Id = 61,
                             Area = 0,
                             BasePrice = 899.0m,
-                            CategoryId = 57,
+                            CategoryId = 9,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1794,10 +1802,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 261,
+                            Id = 62,
                             Area = 0,
                             BasePrice = 999.0m,
-                            CategoryId = 58,
+                            CategoryId = 10,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1806,10 +1814,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 262,
+                            Id = 63,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 58,
+                            CategoryId = 10,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1818,10 +1826,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 263,
+                            Id = 64,
                             Area = 0,
                             BasePrice = 899.0m,
-                            CategoryId = 58,
+                            CategoryId = 10,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1830,10 +1838,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 264,
+                            Id = 65,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 58,
+                            CategoryId = 10,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1842,10 +1850,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 265,
+                            Id = 66,
                             Area = 0,
                             BasePrice = 1199.0m,
-                            CategoryId = 58,
+                            CategoryId = 10,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1854,10 +1862,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 266,
+                            Id = 67,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 58,
+                            CategoryId = 10,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1866,10 +1874,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 267,
+                            Id = 68,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 58,
+                            CategoryId = 10,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1878,10 +1886,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 268,
+                            Id = 69,
                             Area = 0,
                             BasePrice = 499.0m,
-                            CategoryId = 59,
+                            CategoryId = 11,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1890,10 +1898,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 269,
+                            Id = 70,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 59,
+                            CategoryId = 11,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1902,10 +1910,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 270,
+                            Id = 71,
                             Area = 0,
                             BasePrice = 1599.0m,
-                            CategoryId = 59,
+                            CategoryId = 11,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1914,22 +1922,34 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 271,
+                            Id = 72,
                             Area = 0,
-                            BasePrice = 999.0m,
-                            CategoryId = 59,
+                            BasePrice = 799.0m,
+                            CategoryId = 11,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Trio Slim Treatment Mesotherapy with FREE RF (per vial)",
+                            Name = "Trio Slim Treatment",
                             Type = 0
                         },
                         new
                         {
-                            Id = 272,
+                            Id = 73,
+                            Area = 0,
+                            BasePrice = 999.0m,
+                            CategoryId = 11,
+                            Description = "",
+                            IsActive = true,
+                            IsVariablePrice = false,
+                            Name = "Mesotherapy with FREE RF (per vial)",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 74,
                             Area = 0,
                             BasePrice = 2499.0m,
-                            CategoryId = 59,
+                            CategoryId = 11,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1938,10 +1958,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 273,
+                            Id = 75,
                             Area = 0,
                             BasePrice = 4999.0m,
-                            CategoryId = 59,
+                            CategoryId = 11,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1950,10 +1970,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 274,
+                            Id = 76,
                             Area = 0,
                             BasePrice = 6999.0m,
-                            CategoryId = 59,
+                            CategoryId = 11,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1962,10 +1982,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 275,
+                            Id = 77,
                             Area = 0,
                             BasePrice = 599.0m,
-                            CategoryId = 60,
+                            CategoryId = 12,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1974,10 +1994,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 276,
+                            Id = 78,
                             Area = 0,
                             BasePrice = 399.0m,
-                            CategoryId = 60,
+                            CategoryId = 12,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1986,10 +2006,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 277,
+                            Id = 79,
                             Area = 0,
                             BasePrice = 349.0m,
-                            CategoryId = 60,
+                            CategoryId = 12,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -1998,10 +2018,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 278,
+                            Id = 80,
                             Area = 0,
                             BasePrice = 249.0m,
-                            CategoryId = 60,
+                            CategoryId = 12,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -2010,10 +2030,10 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 279,
+                            Id = 81,
                             Area = 0,
                             BasePrice = 699.0m,
-                            CategoryId = 60,
+                            CategoryId = 12,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
@@ -2022,470 +2042,470 @@ namespace ELGlamPOS.Migrations
                         },
                         new
                         {
-                            Id = 280,
+                            Id = 82,
                             Area = 0,
                             BasePrice = 150.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Regular Polish - Manicure",
+                            Name = "Regular Polish Manicure",
                             Type = 0
                         },
                         new
                         {
-                            Id = 281,
+                            Id = 83,
                             Area = 0,
                             BasePrice = 200.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Regular Polish - Pedicure with Soaking",
+                            Name = "Regular Polish Pedicure with Soaking",
                             Type = 0
                         },
                         new
                         {
-                            Id = 282,
+                            Id = 84,
                             Area = 0,
                             BasePrice = 450.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Regular Polish - Pedicure with Footspa",
+                            Name = "Regular Polish Pedicure with Footspa",
                             Type = 0
                         },
                         new
                         {
-                            Id = 283,
+                            Id = 85,
                             Area = 0,
                             BasePrice = 230.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Imported Polish - Manicure",
+                            Name = "Imported Polish Manicure",
                             Type = 0
                         },
                         new
                         {
-                            Id = 284,
+                            Id = 86,
                             Area = 0,
                             BasePrice = 300.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Imported Polish - Pedicure with Soaking",
+                            Name = "Imported Polish Pedicure with Soaking",
                             Type = 0
                         },
                         new
                         {
-                            Id = 285,
+                            Id = 87,
                             Area = 0,
                             BasePrice = 550.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Imported Polish - Pedicure with Footspa",
+                            Name = "Imported Polish Pedicure with Footspa",
                             Type = 0
                         },
                         new
                         {
-                            Id = 286,
+                            Id = 88,
                             Area = 0,
                             BasePrice = 550.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Gel Polish - Manicure",
+                            Name = "Gel Polish Manicure",
                             Type = 0
                         },
                         new
                         {
-                            Id = 287,
+                            Id = 89,
                             Area = 0,
                             BasePrice = 600.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Gel Polish - Pedicure with Soaking",
+                            Name = "Gel Polish Pedicure with Soaking",
                             Type = 0
                         },
                         new
                         {
-                            Id = 288,
+                            Id = 90,
                             Area = 0,
                             BasePrice = 750.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Gel Polish - Pedicure with Footspa",
+                            Name = "Gel Polish Pedicure with Footspa",
                             Type = 0
                         },
                         new
                         {
-                            Id = 289,
+                            Id = 91,
                             Area = 0,
                             BasePrice = 1599.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Nail Extensions - Imported Extensions plain gel polish",
+                            Name = "Imported Extensions plain gel polish",
                             Type = 0
                         },
                         new
                         {
-                            Id = 290,
+                            Id = 92,
                             Area = 0,
                             BasePrice = 1299.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Nail Extensions - Soft Gel Extensions plain gel polish",
+                            Name = "Soft Gel Extensions plain gel polish",
                             Type = 0
                         },
                         new
                         {
-                            Id = 291,
+                            Id = 93,
                             Area = 0,
                             BasePrice = 350.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Others - Foot Spa",
+                            Name = "Foot Spa",
                             Type = 0
                         },
                         new
                         {
-                            Id = 292,
+                            Id = 94,
                             Area = 0,
                             BasePrice = 30.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Others - Ingrown Removal",
+                            Name = "Ingrown Removal",
                             Type = 0
                         },
                         new
                         {
-                            Id = 293,
+                            Id = 95,
                             Area = 0,
                             BasePrice = 350.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Others - Additional Nail Art",
+                            Name = "Additional Nail Art",
                             Type = 0
                         },
                         new
                         {
-                            Id = 294,
+                            Id = 96,
                             Area = 0,
                             BasePrice = 10.0m,
-                            CategoryId = 61,
+                            CategoryId = 13,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Others - Stones",
+                            Name = "Stones",
                             Type = 0
                         },
                         new
                         {
-                            Id = 295,
+                            Id = 97,
                             Area = 0,
                             BasePrice = 200.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Men - Haircut",
+                            Name = "Men Haircut",
                             Type = 0
                         },
                         new
                         {
-                            Id = 296,
+                            Id = 98,
                             Area = 0,
                             BasePrice = 300.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Men - Haircut with Shampoo",
+                            Name = "Men Haircut with Shampoo",
                             Type = 0
                         },
                         new
                         {
-                            Id = 297,
+                            Id = 99,
                             Area = 0,
                             BasePrice = 1000.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Men - Hair Color with Cut",
+                            Name = "Men Hair Color with Cut",
                             Type = 0
                         },
                         new
                         {
-                            Id = 298,
+                            Id = 100,
                             Area = 0,
                             BasePrice = 1000.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Men - Hair Perming",
+                            Name = "Men Hair Perming",
                             Type = 0
                         },
                         new
                         {
-                            Id = 299,
+                            Id = 101,
                             Area = 0,
                             BasePrice = 250.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Women - Haircut",
+                            Name = "Women Haircut",
                             Type = 0
                         },
                         new
                         {
-                            Id = 300,
+                            Id = 102,
                             Area = 0,
                             BasePrice = 350.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Women - Haircut with Shampoo",
+                            Name = "Women Haircut with Shampoo",
                             Type = 0
                         },
                         new
                         {
-                            Id = 301,
+                            Id = 103,
                             Area = 0,
                             BasePrice = 350.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Women - Hair Iron",
+                            Name = "Women Hair Iron",
                             Type = 0
                         },
                         new
                         {
-                            Id = 302,
+                            Id = 104,
                             Area = 0,
                             BasePrice = 350.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Women - Hair Blowdry",
+                            Name = "Women Hair Blowdry",
                             Type = 0
                         },
                         new
                         {
-                            Id = 303,
+                            Id = 105,
                             Area = 0,
                             BasePrice = 1500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = false,
-                            Name = "Women - Hair Perming",
+                            Name = "Women Hair Perming",
                             Type = 0
                         },
                         new
                         {
-                            Id = 304,
+                            Id = 106,
                             Area = 0,
                             BasePrice = 1500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Loreal Hair Spa",
+                            Name = "Loreal Hair Spa",
                             Type = 0
                         },
                         new
                         {
-                            Id = 305,
+                            Id = 107,
                             Area = 0,
                             BasePrice = 1500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Plarmia Scalp Treatment",
+                            Name = "Plarmia Scalp Treatment",
                             Type = 0
                         },
                         new
                         {
-                            Id = 306,
+                            Id = 108,
                             Area = 0,
                             BasePrice = 2000.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Grand Linkage Damage Repair",
+                            Name = "Grand Linkage Damage Repair",
                             Type = 0
                         },
                         new
                         {
-                            Id = 307,
+                            Id = 109,
                             Area = 0,
                             BasePrice = 800.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Hair Cellophane",
+                            Name = "Hair Cellophane",
                             Type = 0
                         },
                         new
                         {
-                            Id = 308,
+                            Id = 110,
                             Area = 0,
                             BasePrice = 2500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Special Treatment - Protein Straight Bond",
+                            Name = "Protein Straight Bond",
                             Type = 0
                         },
                         new
                         {
-                            Id = 309,
+                            Id = 111,
                             Area = 0,
                             BasePrice = 1500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Hair Color - Hair Color & Treatment",
+                            Name = "Hair Color & Treatment",
                             Type = 0
                         },
                         new
                         {
-                            Id = 310,
+                            Id = 112,
                             Area = 0,
                             BasePrice = 2500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Hair Color - Hair Color, Highlights & Treatment",
+                            Name = "Hair Color, Highlights & Treatment",
                             Type = 0
                         },
                         new
                         {
-                            Id = 311,
+                            Id = 113,
                             Area = 0,
                             BasePrice = 3000.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Hair Color - Hair Balayage",
+                            Name = "Hair Balayage",
                             Type = 0
                         },
                         new
                         {
-                            Id = 312,
+                            Id = 114,
                             Area = 0,
                             BasePrice = 1500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Rebonding - Regular Hair Rebond",
+                            Name = "Regular Hair Rebond",
                             Type = 0
                         },
                         new
                         {
-                            Id = 313,
+                            Id = 115,
                             Area = 0,
                             BasePrice = 3000.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Rebonding - Premium Hair Rebond",
+                            Name = "Premium Hair Rebond",
                             Type = 0
                         },
                         new
                         {
-                            Id = 314,
+                            Id = 116,
                             Area = 0,
                             BasePrice = 1500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Brazilian Treatment - Brazilian Treatment",
+                            Name = "Brazilian Treatment",
                             Type = 0
                         },
                         new
                         {
-                            Id = 315,
+                            Id = 117,
                             Area = 0,
                             BasePrice = 2500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Rebond",
+                            Name = "Hair Color, Rebond",
                             Type = 0
                         },
                         new
                         {
-                            Id = 316,
+                            Id = 118,
                             Area = 0,
                             BasePrice = 2500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Brazilian",
+                            Name = "Hair Color, Brazilian",
                             Type = 0
                         },
                         new
                         {
-                            Id = 317,
+                            Id = 119,
                             Area = 0,
                             BasePrice = 3000.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Rebond, Brazilian Treatment",
+                            Name = "Hair Color, Rebond, Brazilian Treatment",
                             Type = 0
                         },
                         new
                         {
-                            Id = 318,
+                            Id = 120,
                             Area = 0,
                             BasePrice = 3500.0m,
-                            CategoryId = 62,
+                            CategoryId = 14,
                             Description = "",
                             IsActive = true,
                             IsVariablePrice = true,
-                            Name = "Beauty Combo - Hair Color, Highlights, Rebond, Brazilian Treatment",
+                            Name = "Hair Color, Highlights, Rebond, Brazilian Treatment",
                             Type = 0
                         });
                 });

@@ -76,7 +76,21 @@ public static class MauiProgram
 		builder.Services.AddSingleton(firebaseConfig);
 
 		// ── SQLite (local, offline-capable) ───────────────────────────────────────
-		string dbPath = Path.Combine(FileSystem.AppDataDirectory, "pos_v3.db");
+		string oldDbPath1 = Path.Combine(FileSystem.AppDataDirectory, "pos.db");
+		string oldDbPath2 = Path.Combine(FileSystem.AppDataDirectory, "pos_v2.db");
+		string oldDbPath3 = Path.Combine(FileSystem.AppDataDirectory, "pos_v3.db");
+		string dbPath = Path.Combine(FileSystem.AppDataDirectory, "elglam_pos.db");
+
+		// Migrate old database to the new clean name without data loss
+		if (File.Exists(oldDbPath3) && !File.Exists(dbPath))
+		{
+			File.Move(oldDbPath3, dbPath);
+		}
+		
+		// Clean up outdated databases to save space
+		if (File.Exists(oldDbPath1)) { try { File.Delete(oldDbPath1); } catch { } }
+		if (File.Exists(oldDbPath2)) { try { File.Delete(oldDbPath2); } catch { } }
+
 		builder.Services.AddDbContextFactory<PosDbContext>(options =>
 			options.UseSqlite($"Filename={dbPath}"));
 		builder.Services.AddDbContext<PosDbContext>(options =>

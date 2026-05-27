@@ -3,6 +3,7 @@ using System;
 using ELGlamPOS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ELGlamPOS.Migrations
 {
     [DbContext(typeof(PosDbContext))]
-    partial class PosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260527012413_RemoveStartingPriceText")]
+    partial class RemoveStartingPriceText
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -90,16 +93,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "1e0eb535-21c2-4740-94c7-2c905550f29e",
+                            ConcurrencyStamp = "96c1bdc1-3aaf-40c7-9848-4c76e562bfd6",
                             Email = "jesa@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 1,
                             LockoutEnabled = false,
                             NormalizedEmail = "JESA@SALON.COM",
                             NormalizedUserName = "JESA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBn6sQWQqMnJP2e9ToNlMImCDddMNMk0guDDrocqYkiP6V1J/YbNcXVpIE20ejxi3w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEzBoaj0ApnJXWQ7n3v/EQvW7Y0h+U4C+pfL7iBkABYhRYYe4W7S2OBfglf+s9pxwQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "0bef63b8-bb77-4ed3-b6d3-93211982747a",
+                            SecurityStamp = "e34ffc10-d2dd-44c6-b182-e0afa268190a",
                             TwoFactorEnabled = false,
                             UserName = "jesa@salon.com"
                         },
@@ -107,16 +110,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "2",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "817c33e4-450f-4932-a03b-7ea8b9aa1b86",
+                            ConcurrencyStamp = "57edf706-b3b7-42e9-b59b-61f46e233569",
                             Email = "marilyn@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 7,
                             LockoutEnabled = false,
                             NormalizedEmail = "MARILYN@SALON.COM",
                             NormalizedUserName = "MARILYN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAN9gVJwy/5nY9aZ7C3EzZ+zcXthbkIH4JNMXAtu8mX5k5SMCbnewQ28PMWrOFkLjQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENzE1k4KXGe9/nkyB/u3fJ/lcSJk1xI6ljLdEaNEhME+1pv1FgqAt5RdxyCdC2K1Bw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e94744b1-b691-4aa4-aba0-a545cc45c8d9",
+                            SecurityStamp = "81df787e-3f04-4b42-83fe-c56e53189964",
                             TwoFactorEnabled = false,
                             UserName = "marilyn@salon.com"
                         },
@@ -124,16 +127,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "3",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "b74f662e-85a2-4af8-accb-c41a93c8b0ec",
+                            ConcurrencyStamp = "da982ed5-1bc5-4dfa-80ad-3f31d95c703d",
                             Email = "rowena@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 13,
                             LockoutEnabled = false,
                             NormalizedEmail = "ROWENA@SALON.COM",
                             NormalizedUserName = "ROWENA@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJ9AE6HwYDnBvT1rsGfIahjKzo5eAJrzw0mbQ7+XVgOrPsCc09mlN5FfsusxZ2/utw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENYBFEplulcYIgHfQ7GfYXbCaAkc1buXuUe2Zl4lNvq3+FWjwdRkGDwfbsXDqwU8Lw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ae66d99d-6a8e-4563-bbc4-801fdb8de9eb",
+                            SecurityStamp = "c3123245-9f2b-4f33-9286-dc7dc7c30456",
                             TwoFactorEnabled = false,
                             UserName = "rowena@salon.com"
                         },
@@ -141,16 +144,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "3b2a62c4-bfb9-4409-a804-1c1c9e1ed207",
+                            ConcurrencyStamp = "1aba530c-fafb-40c6-ada9-8486eff422e8",
                             Email = "jennifer@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 16,
                             LockoutEnabled = false,
                             NormalizedEmail = "JENNIFER@SALON.COM",
                             NormalizedUserName = "JENNIFER@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHM5v1Xb2k7IxiL/Q5/G9O7kzuXGBA1neKXpo3f8fL/JjGaWkd2/yUaMZ02bKnEg3w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEA+jqrcLTtdOaHk4qUSNhvViqYa1F5d/MA04xZ48sXoXM9B85AXHfbAM1E1ShFWEdA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "d2e9b71d-1155-4938-a7fb-14a571dd9dd5",
+                            SecurityStamp = "95761013-7663-4034-9cca-a66610b4d120",
                             TwoFactorEnabled = false,
                             UserName = "jennifer@salon.com"
                         },
@@ -158,16 +161,16 @@ namespace ELGlamPOS.Migrations
                         {
                             Id = "5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "f0e6c651-fd5d-41a8-8cd7-4ce32557fcf1",
+                            ConcurrencyStamp = "5eb5ab5d-0955-422a-b317-162c8d291359",
                             Email = "admin@salon.com",
                             EmailConfirmed = false,
                             EmployeeId = 21,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@SALON.COM",
                             NormalizedUserName = "ADMIN@SALON.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEL35max0AQlH5SAgQ7ybyVJ4peSxHvnMHspgu3d6zaDPSulVAmK2U93Sye9L9o4g+w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEG5ISq/SScoK28i7RCqgqG+WFOTyY9EO1KKfsulyzNEPTFkSxlx6aEUddYackTjRkQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "436b4617-a832-447d-a3b1-a94023a54a08",
+                            SecurityStamp = "d1fd3ec3-7464-43c3-88aa-7cc942f868a1",
                             TwoFactorEnabled = false,
                             UserName = "admin@salon.com"
                         });
@@ -965,13 +968,12 @@ namespace ELGlamPOS.Migrations
                         new
                         {
                             Id = 54,
-                            Area = "Clinic",
                             Name = "Semi-Permanent Make Up"
                         },
                         new
                         {
                             Id = 55,
-                            Area = "Salon",
+                            Area = "Clinic",
                             Name = "Others (Hair & Make Up)"
                         },
                         new
